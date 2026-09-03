@@ -1,8 +1,11 @@
 const slackBotToken = process.env.SLACK_BOT_TOKEN;
+const defaultSlackChannelId = "C0BUTFJ35QA";
 const slackChannelId =
   process.env.SLACK_BATIZADO_CHANNEL_ID ||
   process.env.SLACK_CHANNEL_ID ||
-  process.env.SLACK_VISITS_CHANNEL_ID;
+  process.env.SLACK_CONFIRMATION_CHANNEL_ID ||
+  process.env.SLACK_VISITS_CHANNEL_ID ||
+  defaultSlackChannelId;
 const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
 
 const CHURCH_NAME = "SANTUÁRIO NOSSA SENHORA DE FÁTIMA";

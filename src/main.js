@@ -18,11 +18,16 @@ const increaseBtn = document.getElementById('increase');
 const nameInput = document.getElementById('name');
 const companionsInput = document.getElementById('companions');
 const noteInput = document.getElementById('note');
+const momentChoiceGroup = document.getElementById('momentChoiceGroup');
+const momentChurchBtn = document.getElementById('momentChurch');
+const momentRestaurantBtn = document.getElementById('momentRestaurant');
+const momentBothBtn = document.getElementById('momentBoth');
 const attendeesGroup = document.getElementById('attendeesGroup');
 const companionsGroup = document.getElementById('companionsGroup');
 const notesGroup = document.getElementById('notesGroup');
 const scrollProgressBar = document.getElementById('scrollProgressBar');
 const choiceButtons = [btnYes, btnNo];
+const momentButtons = [momentChurchBtn, momentRestaurantBtn, momentBothBtn];
 
 const revealTargets = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver(
@@ -50,6 +55,7 @@ revealTargets.forEach((el) => {
 });
 
 let attendanceChoice = null;
+let attendanceMoment = null;
 
 const setAttendees = (value) => {
   const parsed = Number.parseInt(value, 10);
@@ -65,12 +71,16 @@ const setAttendees = (value) => {
 const resetForm = () => {
   form.reset();
   setAttendees(1);
+  attendanceMoment = null;
+  momentButtons.forEach((button) => button?.classList.remove('active'));
 };
 
 const resetChoices = () => {
   btnYes.classList.remove('active');
   btnNo.classList.remove('active');
+  momentButtons.forEach((button) => button?.classList.remove('active'));
   attendeesGroup.classList.add('hidden');
+  momentChoiceGroup.classList.add('hidden');
   companionsGroup.classList.add('hidden');
 };
 
@@ -79,11 +89,14 @@ const showChoice = (choice) => {
   errorMessage.textContent = '';
   successMessage.classList.add('hidden');
   choiceButtons.forEach((button) => button?.classList.remove('active'));
+  momentButtons.forEach((button) => button?.classList.remove('active'));
+  attendanceMoment = null;
 
   const isAttending = choice === 'sim';
   form.classList.remove('hidden');
   attendeesGroup.classList.toggle('hidden', !isAttending);
   companionsGroup.classList.toggle('hidden', !isAttending);
+  momentChoiceGroup.classList.toggle('hidden', !isAttending);
   notesGroup.classList.remove('hidden');
   btnYes.classList.toggle('active', isAttending);
   btnNo.classList.toggle('active', !isAttending);
@@ -102,6 +115,7 @@ const buildPayload = () => ({
   name: nameInput.value.trim(),
   willAttend: attendanceChoice,
   attendees: attendanceChoice === 'sim' ? Number(attendeesInput.value) || 1 : 0,
+  attendanceMode: attendanceMoment,
   companions: companionsInput.value.trim(),
   note: noteInput.value.trim(),
 });
@@ -120,9 +134,13 @@ const submitConfirmation = async (event) => {
     errorMessage.textContent = 'Escolha uma opção de presença.';
     return;
   }
+  if (attendanceChoice === 'sim' && !attendanceMoment) {
+    errorMessage.textContent = 'Selecione de quais momentos você participará.';
+    return;
+  }
 
   const submitBtn = form.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
+    submitBtn.disabled = true;
 
   try {
     const response = await fetch(API_ENDPOINT, {
@@ -166,6 +184,16 @@ const submitConfirmation = async (event) => {
   }
 };
 
+const chooseMoment = (moment, selectedButton) => {
+  attendanceMoment = moment;
+  momentButtons.forEach((button) => {
+    button?.classList.remove('active');
+    if (button === selectedButton) {
+      button.classList.add('active');
+    }
+  });
+};
+
 const updateScrollProgress = () => {
   if (!scrollProgressBar) {
     return;
@@ -191,6 +219,11 @@ decreaseBtn?.addEventListener('click', () => {
 increaseBtn?.addEventListener('click', () => {
   setAttendees(Number(attendeesInput.value) + 1);
 });
+momentChurchBtn?.addEventListener('click', () => chooseMoment('igreja', momentChurchBtn));
+momentRestaurantBtn?.addEventListener('click', () =>
+  chooseMoment('restaurante', momentRestaurantBtn),
+);
+momentBothBtn?.addEventListener('click', () => chooseMoment('ambos', momentBothBtn));
 form?.addEventListener('submit', submitConfirmation);
 
 window.addEventListener('scroll', updateScrollProgress, { passive: true });

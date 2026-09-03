@@ -421,6 +421,10 @@ ul.info-list-compact li {
   gap: 0.7rem;
 }
 
+.moment-grid {
+  margin-top: 0.55rem;
+}
+
 .confirmation-form.hidden {
   animation: none;
 }
@@ -816,6 +820,10 @@ ul.info-list-compact li {
 @media (min-width: 760px) {
   .choice-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .moment-grid {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   .btn,

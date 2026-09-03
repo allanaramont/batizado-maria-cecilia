@@ -15,7 +15,7 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/batizado-og.svg" />
-    <meta property="og:url" content="https://localhost" />
+    <meta property="og:url" content="https://batizado.desenvbr.com" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Batizado da Maria Cecilia" />
     <meta
@@ -163,41 +163,45 @@
         <h2>Você estará conosco nesse dia tão especial?</h2>
 
         <div class="button-row" id="attendanceChoiceRow">
-          <button id="attendYes" class="btn" type="button">Sim</button>
-          <button id="attendNo" class="btn btn-outline" type="button">Não</button>
+          <button id="attendYes" class="btn" type="button">
+            Sim, eu vou
+          </button>
+          <button id="attendNo" class="btn btn-outline" type="button">
+            Não poderei ir
+          </button>
         </div>
 
         <form id="confirmationForm" class="hidden" novalidate>
           <label for="name">Nome completo</label>
           <input id="name" type="text" autocomplete="name" placeholder="Seu nome" required />
 
-          <label for="attendees">Quantas pessoas estarão presentes?</label>
-          <div class="counter">
-            <button id="decrease" type="button" aria-label="Diminuir" disabled>−</button>
-            <input id="attendees" type="text" readonly value="1" aria-live="polite" />
-            <button id="increase" type="button" aria-label="Aumentar">+</button>
+          <div id="attendeesGroup" class="hidden">
+            <label for="attendees">Quantas pessoas estarão presentes?</label>
+            <div class="counter">
+              <button id="decrease" type="button" aria-label="Diminuir" disabled>−</button>
+              <input id="attendees" type="text" readonly value="1" aria-live="polite" />
+              <button id="increase" type="button" aria-label="Aumentar">+</button>
+            </div>
           </div>
 
-          <label for="companions">Quem mais estará com você? (opcional)</label>
-          <input id="companions" type="text" placeholder="Nomes dos acompanhantes" />
+          <div id="companionsGroup" class="hidden">
+            <label for="companions">Quem mais estará com você? (opcional)</label>
+            <input id="companions" type="text" placeholder="Nomes dos acompanhantes" />
+          </div>
 
-          <label for="note">Observações (opcional)</label>
-          <textarea id="note" rows="3" placeholder="Mensagem ou alguma observação"></textarea>
+          <div id="notesGroup" class="hidden">
+            <label for="note">Observações (opcional)</label>
+            <textarea
+              id="note"
+              rows="3"
+              placeholder="Mensagem ou alguma observação"
+            ></textarea>
+          </div>
 
           <button class="btn btn-primary btn-submit" type="submit">Enviar confirmação</button>
         </form>
 
-        <p id="nonParticipantMessage" class="success-message hidden">
-          Que alegria ter você conosco! 🤍<br />
-          Será uma bênção compartilhar esse momento tão especial da vida da Maria
-          Cecilia com você.
-        </p>
-
-        <p id="successMessage" class="success-message hidden">
-          Que alegria ter você conosco! 🤍<br />
-          Será uma bênção compartilhar esse momento tão especial da vida da Maria
-          Cecilia com você.
-        </p>
+        <p id="successMessage" class="success-message hidden"></p>
 
         <p id="errorMessage" class="error-message"></p>
       </section>
@@ -215,10 +219,6 @@
           <li>Comanda individual no restaurante</li>
           <li>Contato dos anfitriões: (a definir)</li>
         </ul>
-
-        <div class="button-row">
-          <button id="exportCsv" class="btn" type="button">Baixar lista de confirmações (.csv)</button>
-        </div>
       </section>
 
       <footer class="footer">
@@ -230,219 +230,5 @@
       </footer>
     </main>
 
-    <script>
-      const CHURCH_NAME = "SANTUÁRIO NOSSA SENHORA DE FÁTIMA";
-      const CHURCH_DATE = "19 de setembro de 2026";
-      const CHURCH_TIME = "12:00";
-      const CHURCH_ADDRESS =
-        "Av. Alfredo Balthazar da Silveira, 900. Recreio dos Bandeirantes. (Próximo ao Barra World)";
-      const RESTAURANT_NAME = "Bistral Rio";
-      const RESTAURANT_TIME = "13:30";
-      const RESTAURANT_ADDRESS = "Av. Lúcio Costa, 16.756";
-      const MENU_FILE_URL =
-        "https://drive.google.com/file/d/1l9G0b3zbysQJsCHgHEzj4yQbpirxSinN/view";
-
-      const STORAGE_KEY = "batizado-confirmacoes-maria-cecilia";
-
-      const btnYes = document.getElementById("attendYes");
-      const btnNo = document.getElementById("attendNo");
-      const form = document.getElementById("confirmationForm");
-      const nonParticipantMessage = document.getElementById("nonParticipantMessage");
-      const successMessage = document.getElementById("successMessage");
-      const errorMessage = document.getElementById("errorMessage");
-      const attendeesInput = document.getElementById("attendees");
-      const decreaseBtn = document.getElementById("decrease");
-      const increaseBtn = document.getElementById("increase");
-      const exportBtn = document.getElementById("exportCsv");
-      const nameInput = document.getElementById("name");
-      const companionsInput = document.getElementById("companions");
-      const noteInput = document.getElementById("note");
-      const menuButton = document.getElementById("menuButton");
-
-      let selectedChoice = null;
-
-      const parseRecords = () => {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) return [];
-        try {
-          const parsed = JSON.parse(stored);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      };
-
-      const saveRecord = (record) => {
-        const all = parseRecords();
-        all.push(record);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-      };
-
-      const toCSV = (rows) => {
-        if (!rows.length) return "";
-        const headers = [
-          "data_hora",
-          "nome",
-          "participara",
-          "quantidade",
-          "acompanhantes",
-          "observacoes",
-        ];
-        const escape = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
-        const dataLines = rows.map((row) =>
-          [
-            row.createdAt,
-            row.name,
-            row.attendance,
-            row.attendees,
-            row.companions,
-            row.note,
-          ]
-            .map(escape)
-            .join(",")
-        );
-        return [headers.join(","), ...dataLines].join("\n");
-      };
-
-      const handleChoice = (choice) => {
-        selectedChoice = choice;
-        errorMessage.textContent = "";
-        form.classList.add("hidden");
-        nonParticipantMessage.classList.add("hidden");
-        successMessage.classList.add("hidden");
-
-        btnYes.classList.toggle("active", choice === "yes");
-        btnNo.classList.toggle("active", choice === "no");
-
-        if (choice === "yes") {
-          form.classList.remove("hidden");
-          form.querySelector("#name").focus();
-        } else if (choice === "no") {
-          form.classList.remove("hidden");
-          noteInput.classList.add("hidden");
-          document.querySelector("label[for='note']").classList.add("hidden");
-          document.getElementById("companions").classList.add("hidden");
-          document.querySelector("label[for='companions']").classList.add("hidden");
-          attendeesInput.closest(".counter").classList.add("hidden");
-          document.querySelector("label[for='attendees']").classList.add("hidden");
-          document.querySelector("label[for='name']").textContent = "Nome completo";
-          nameInput.value = "";
-          companionsInput.value = "";
-          noteInput.value = "";
-          nonParticipantMessage.classList.remove("hidden");
-        }
-      };
-
-      const setAttendees = (value) => {
-        const parsed = Number.parseInt(value, 10);
-        const safe = Number.isNaN(parsed) ? 1 : Math.max(1, parsed);
-        attendeesInput.value = String(safe);
-        decreaseBtn.disabled = safe <= 1;
-      };
-
-      btnYes?.addEventListener("click", () => {
-        document.querySelector("#note").classList.remove("hidden");
-        document.querySelector("label[for='note']").classList.remove("hidden");
-        document.getElementById("companions").classList.remove("hidden");
-        document.querySelector("label[for='companions']").classList.remove("hidden");
-        attendeesInput.closest(".counter").classList.remove("hidden");
-        document.querySelector("label[for='attendees']").classList.remove("hidden");
-        form.classList.remove("hidden");
-        nonParticipantMessage.classList.add("hidden");
-        successMessage.classList.add("hidden");
-        handleChoice("yes");
-      });
-
-      btnNo?.addEventListener("click", () => {
-        handleChoice("no");
-      });
-
-      decreaseBtn?.addEventListener("click", () => {
-        setAttendees(Number(attendeesInput.value) - 1);
-      });
-
-      increaseBtn?.addEventListener("click", () => {
-        setAttendees(Number(attendeesInput.value) + 1);
-      });
-
-      form?.addEventListener("submit", (event) => {
-        event.preventDefault();
-        errorMessage.textContent = "";
-
-        const name = nameInput.value.trim();
-        if (!name) {
-          errorMessage.textContent = "Informe o nome completo.";
-          return;
-        }
-
-        if (selectedChoice === "yes") {
-          const record = {
-            createdAt: new Date().toISOString(),
-            name,
-            attendance: "sim",
-            attendees: Number(attendeesInput.value),
-            companions: companionsInput.value.trim(),
-            note: noteInput.value.trim(),
-            church: CHURCH_NAME,
-            churchDate: CHURCH_DATE,
-            churchTime: CHURCH_TIME,
-            churchAddress: CHURCH_ADDRESS,
-            restaurant: RESTAURANT_NAME,
-            restaurantTime: RESTAURANT_TIME,
-            restaurantAddress: RESTAURANT_ADDRESS,
-            menuFile: MENU_FILE_URL,
-          };
-          saveRecord(record);
-          form.reset();
-          attendeesInput.value = "1";
-          setAttendees(1);
-          successMessage.classList.remove("hidden");
-          nonParticipantMessage.classList.add("hidden");
-        } else if (selectedChoice === "no") {
-          const record = {
-            createdAt: new Date().toISOString(),
-            name,
-            attendance: "não",
-            attendees: 0,
-            companions: companionsInput.value.trim(),
-            note: noteInput.value.trim(),
-          };
-          saveRecord(record);
-          nonParticipantMessage.classList.remove("hidden");
-          successMessage.classList.add("hidden");
-          form.reset();
-        }
-
-        form.classList.add("hidden");
-        btnYes.classList.remove("active");
-        btnNo.classList.remove("active");
-        selectedChoice = null;
-        setTimeout(() => {
-          form.classList.remove("hidden");
-          document.querySelector("label[for='name']").textContent = "Nome completo";
-          document.querySelector("label[for='name']").classList.remove("hidden");
-        }, 700);
-      });
-
-      exportBtn?.addEventListener("click", () => {
-        const data = parseRecords();
-        const csv = toCSV(data);
-        if (!csv) {
-          errorMessage.textContent = "Ainda não há confirmações para exportar.";
-          return;
-        }
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "confirmacoes-batizado-maria-cecilia.csv";
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-        a.remove();
-      });
-
-      menuButton?.setAttribute("href", MENU_FILE_URL);
-    </script>
   </body>
 </html>

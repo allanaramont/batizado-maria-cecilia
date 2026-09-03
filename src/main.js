@@ -21,6 +21,8 @@ const noteInput = document.getElementById('note');
 const attendeesGroup = document.getElementById('attendeesGroup');
 const companionsGroup = document.getElementById('companionsGroup');
 const notesGroup = document.getElementById('notesGroup');
+const scrollProgressBar = document.getElementById('scrollProgressBar');
+const choiceButtons = [btnYes, btnNo];
 
 const revealTargets = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver(
@@ -28,15 +30,21 @@ const observer = new IntersectionObserver(
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
       }
     });
   },
   {
-    threshold: 0.2,
+    rootMargin: '0px 0px -10% 0px',
+    threshold: 0.15,
   },
 );
 
 revealTargets.forEach((el) => {
+  const delay = el.dataset?.revealDelay ? Number(el.dataset.revealDelay) : 0;
+  if (!Number.isNaN(delay)) {
+    el.style.setProperty('--reveal-delay', `${delay}ms`);
+  }
   el.classList.add('reveal');
   observer.observe(el);
 });
@@ -70,13 +78,13 @@ const showChoice = (choice) => {
   attendanceChoice = choice;
   errorMessage.textContent = '';
   successMessage.classList.add('hidden');
+  choiceButtons.forEach((button) => button?.classList.remove('active'));
 
   const isAttending = choice === 'sim';
   form.classList.remove('hidden');
   attendeesGroup.classList.toggle('hidden', !isAttending);
   companionsGroup.classList.toggle('hidden', !isAttending);
   notesGroup.classList.remove('hidden');
-
   btnYes.classList.toggle('active', isAttending);
   btnNo.classList.toggle('active', !isAttending);
 
@@ -158,6 +166,22 @@ const submitConfirmation = async (event) => {
   }
 };
 
+const updateScrollProgress = () => {
+  if (!scrollProgressBar) {
+    return;
+  }
+
+  const docHeight = Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight,
+    1,
+  );
+  const viewport = window.innerHeight;
+  const total = Math.max(docHeight - viewport, 1);
+  const progress = Math.min(Math.max((window.scrollY / total) * 100, 0), 100);
+  scrollProgressBar.style.width = `${progress}%`;
+};
+
 btnYes?.addEventListener('click', () => showChoice('sim'));
 btnNo?.addEventListener('click', () => showChoice('nao'));
 
@@ -168,3 +192,6 @@ increaseBtn?.addEventListener('click', () => {
   setAttendees(Number(attendeesInput.value) + 1);
 });
 form?.addEventListener('submit', submitConfirmation);
+
+window.addEventListener('scroll', updateScrollProgress, { passive: true });
+updateScrollProgress();

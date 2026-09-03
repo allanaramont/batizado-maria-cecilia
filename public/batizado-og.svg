@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff8ef"/>
+      <stop offset="100%" stop-color="#f3e5d2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" rx="34" fill="url(#bg)"/>
+  <g opacity="0.7" fill="#f0d8cd">
+    <circle cx="180" cy="130" r="18"/>
+    <circle cx="1020" cy="145" r="12"/>
+    <circle cx="180" cy="540" r="16"/>
+    <circle cx="1080" cy="548" r="11"/>
+  </g>
+  <rect x="32" y="32" width="1136" height="566" rx="26" fill="none" stroke="#dcc0ad" stroke-width="2"/>
+
+  <text x="600" y="170" text-anchor="middle" fill="#6f4c44" font-size="54" font-family="Georgia, serif" font-weight="600">Batizado da</text>
+  <text x="600" y="278" text-anchor="middle" fill="#73453d" font-size="120" font-family="'Great Vibes', 'Brush Script MT', cursive">Maria Cecilia</text>
+  <text x="600" y="345" text-anchor="middle" fill="#8a564b" font-size="36" font-family="Georgia, serif">19 de setembro de 2026</text>
+  <text x="600" y="405" text-anchor="middle" fill="#7e5950" font-size="34" font-family="Georgia, serif">Santuário Nossa Senhora de Fátima</text>
+  <text x="600" y="455" text-anchor="middle" fill="#7e5950" font-size="30" font-family="Georgia, serif">12:00</text>
+  <text x="600" y="535" text-anchor="middle" fill="#8a564b" font-size="30" font-family="Georgia, serif">Com fé, amor e gratidão</text>
+
+  <path d="M320 230 C 450 180, 580 250, 690 210" stroke="#d7b6a2" stroke-width="6" fill="none" opacity="0.7"/>
+  <path d="M510 360 C 610 420, 760 390, 860 340" stroke="#e0c3ad" stroke-width="6" fill="none" opacity="0.55"/>
+  <path d="M280 430 C 400 390, 520 420, 620 450" stroke="#c9a48f" stroke-width="6" fill="none" opacity="0.5"/>
+</svg>

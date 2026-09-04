@@ -10,8 +10,6 @@ const VISIT_API_ENDPOINT = '/api/track-visit';
 
 const EVENT_DATETIME = new Date('2026-09-19T12:00:00-03:00');
 
-const SUCCESS_MESSAGE_SIM =
-  'Que alegria ter você conosco! Será uma bênção compartilhar esse momento tão especial da vida da Maria Cecilia com você.';
 const SUCCESS_MESSAGE_NAO =
   'Obrigado pelo retorno. Nathelly e Allan vão receber seu carinho no dia.';
 
@@ -390,6 +388,13 @@ const getPeopleCount = (payload) => {
       : 0;
 
   return Math.max(1, namedCompanions + 1);
+};
+
+const buildSuccessMessage = (payload) => {
+  const isPlural = getPeopleCount(payload) > 1;
+  return isPlural
+    ? 'Que alegria ter vocês conosco! Será uma bênção compartilhar esse momento tão especial da vida da Maria Cecilia com vocês.'
+    : 'Que alegria ter você conosco! Será uma bênção compartilhar esse momento tão especial da vida da Maria Cecilia com você.';
 };
 
 // roda o carrossel de loading em loop enquanto a API nao responde.
@@ -836,7 +841,7 @@ const submitConfirmation = async (e) => {
     }
 
     successMessage.textContent =
-      payload.willAttend === 'sim' ? SUCCESS_MESSAGE_SIM : SUCCESS_MESSAGE_NAO;
+      payload.willAttend === 'sim' ? buildSuccessMessage(payload) : SUCCESS_MESSAGE_NAO;
     // Esconde o loading e mostra o card final com foto + check
     if (wizardLoading) wizardLoading.hidden = true;
     if (successFinal) successFinal.hidden = false;

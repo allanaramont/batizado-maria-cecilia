@@ -175,20 +175,22 @@ async function runTypewriter() {
   if (!hero) return;
   hero.classList.add('is-typing');
 
-  // 1) Eyebrow desce de cima (sutis 16px, ~1s)
-  await sleep(180);
+  // pausa inicial para a tela respirar antes do eyebrow entrar
+  await sleep(450);
+
+  // 1) Eyebrow desce de cima (-36px, ~1.4s, com easing dramático)
   hero.classList.add('phase-1');
-  await sleep(1000);
+  await sleep(1500);
 
   // 2) Nome digita rápido (Maria + Cecilia)
   await typeInto(typeName1, 'Maria', 85);
-  await sleep(120);
+  await sleep(140);
   await typeInto(typeName2, 'Cecilia', 85);
   await sleep(280);
 
   // 3) Lead, data e sub ficam visíveis (digitam em seguida)
   hero.classList.add('phase-3');
-  await sleep(220);
+  await sleep(240);
 
   // 4) Lead digita
   await typeInto(
@@ -210,7 +212,7 @@ async function runTypewriter() {
 
   // 7) CTAs e scroll-cue sobem de baixo
   hero.classList.add('phase-4');
-  await sleep(700);
+  await sleep(750);
 
   // cleanup: libera as linhas do título para o reveal padrão
   document

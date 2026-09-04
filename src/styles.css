@@ -604,13 +604,13 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: -6px 0;
+  margin: 4px 0;
   pointer-events: none;
-  opacity: 0.92;
+  opacity: 0.95;
 }
 
 .hero-dove svg {
-  width: clamp(72px, 9vw, 110px);
+  width: clamp(180px, 26vw, 320px);
   height: auto;
   display: block;
   animation: float-and-bob 7s ease-in-out infinite;
@@ -1817,13 +1817,13 @@ a {
   will-change: transform, opacity;
 }
 
-/* estado inicial (antes de qualquer fase) — valores sutis */
+/* estado inicial (antes de qualquer fase) — eyebrow desce de cima com presença */
 .eyebrow {
-  transform: translateY(-16px);
+  transform: translateY(-36px);
   opacity: 0;
   transition:
-    transform 1s var(--ease-out),
-    opacity 1s var(--ease-out);
+    transform 1.4s cubic-bezier(0.22, 0.85, 0.25, 1),
+    opacity 1.4s cubic-bezier(0.22, 0.85, 0.25, 1);
 }
 .hero.phase-1 .eyebrow {
   transform: translateY(0);

@@ -602,12 +602,12 @@ a {
 
 .hero-ornament {
   position: absolute;
-  width: clamp(320px, 50vw, 620px);
+  width: clamp(280px, 38vw, 420px);
   aspect-ratio: 1;
-  top: 44%;
+  top: 18%;
   left: 50%;
   transform: translate(-50%, -50%);
-  opacity: 0.95;
+  opacity: 0.9;
   animation: float 7s ease-in-out infinite;
   z-index: 0;
   pointer-events: none;
@@ -668,20 +668,15 @@ a {
 }
 
 .display .italic {
+  font-family: var(--font-accent);
   font-style: italic;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--rose-deep);
   position: relative;
   display: inline-block;
-}
-
-.display .italic::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, transparent 60%, rgba(212, 133, 154, 0.18) 100%);
-  mix-blend-mode: multiply;
+  font-variation-settings: normal;
+  /* use the ligature-free "i" so it doesn't look like it has an accent */
+  font-feature-settings: "liga" 0, "dlig" 0, "swsh" 0;
 }
 
 .hero-meta {
@@ -699,13 +694,21 @@ a {
 }
 
 .hero-date {
-  font-family: var(--font-ui);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.8vw, 28px);
   font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  letter-spacing: 0.18em;
   color: var(--ink);
   margin: 0;
+  font-variation-settings: "opsz" 144;
+}
+
+.hero-date-month {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--rose-deep);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
 }
 
 .hero-dot {
@@ -714,12 +717,22 @@ a {
   margin: 0 4px;
 }
 
+.hero-lead {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-size: clamp(16px, 1.8vw, 19px);
+  color: var(--ink-soft);
+  margin: 14px auto 0;
+  max-width: 480px;
+  line-height: 1.55;
+}
+
 .hero-sub {
   font-family: var(--font-accent);
   font-style: italic;
   font-size: clamp(18px, 2.2vw, 22px);
   color: var(--ink-soft);
-  margin: 0 0 40px;
+  margin: 14px 0 40px;
   max-width: 480px;
   line-height: 1.4;
 }
@@ -1788,6 +1801,65 @@ a {
   opacity: 1 !important;
   transform: none !important;
   transition: none !important;
+}
+
+/* === ENTRADA DO HERO (faseada) ===
+   Sequência controlada por classes no <section class="hero">:
+   phase-1 → eyebrow desce de cima
+   phase-2 → h1 já visível enquanto o nome é digitado
+   phase-3 → lead, data e sub aparecem (sub digitado)
+   phase-4 → CTAs e scroll-cue sobem de baixo
+*/
+.eyebrow,
+.hero-meta,
+.hero-lead,
+.hero-sub,
+.hero-cta,
+.scroll-cue {
+  will-change: transform, opacity;
+}
+
+/* estado inicial (antes de qualquer fase) */
+.eyebrow {
+  transform: translateY(-26px);
+  opacity: 0;
+  transition:
+    transform 0.9s var(--ease-out),
+    opacity 0.9s var(--ease-out);
+}
+.hero.phase-1 .eyebrow {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.hero-lead,
+.hero-sub,
+.hero-meta {
+  transform: translateY(10px);
+  opacity: 0;
+  transition:
+    transform 0.7s var(--ease-out),
+    opacity 0.7s var(--ease-out);
+}
+.hero.phase-3 .hero-lead,
+.hero.phase-3 .hero-sub,
+.hero.phase-3 .hero-meta {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.hero-cta,
+.scroll-cue {
+  transform: translateY(24px);
+  opacity: 0;
+  transition:
+    transform 0.9s var(--ease-out),
+    opacity 0.9s var(--ease-out);
+}
+.hero.phase-4 .hero-cta,
+.hero.phase-4 .scroll-cue {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .display-line.is-visible > span {

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hero — comparação de copy</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <style>
+      body {
+        background: var(--bg);
+        margin: 0;
+        padding: 0;
+      }
+      .compare {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+      .compare h2 {
+        font-family: var(--font-accent);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ink);
+        margin: 60px 0 6px;
+      }
+      .compare h2 small {
+        display: block;
+        font-family: var(--font-ui);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--ink-soft);
+        letter-spacing: 0.04em;
+        text-transform: none;
+        margin-top: 4px;
+      }
+      .compare .frame {
+        position: relative;
+        border-radius: 28px;
+        overflow: hidden;
+        background: var(--bg);
+        box-shadow: 0 1px 0 var(--surface-line), 0 30px 80px -40px rgba(92, 56, 69, 0.3);
+        border: 1px solid var(--surface-line);
+      }
+      /* mini-hero (compact, just for comparison) */
+      .mini-hero {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 96px 24px 64px;
+        overflow: hidden;
+      }
+      .mini-hero .ornament {
+        position: absolute;
+        top: 38%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 220px;
+        opacity: 0.7;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .mini-hero > * { position: relative; z-index: 1; }
+      .mini-hero .eyebrow {
+        display: inline-block;
+        font-family: var(--font-ui);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.6);
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: 1px solid var(--surface-line);
+        margin: 0 0 22px;
+      }
+      .mini-hero .display {
+        font-family: var(--font-display);
+        font-variation-settings: "opsz" 144;
+        font-size: clamp(48px, 7vw, 84px);
+        font-weight: 500;
+        line-height: 0.96;
+        letter-spacing: -0.015em;
+        color: var(--ink);
+        margin: 0 0 8px;
+      }
+      .mini-hero .display .italic {
+        display: block;
+        font-style: italic;
+        color: var(--rose-deep);
+        font-weight: 400;
+      }
+      .mini-hero .lead {
+        font-family: var(--font-accent);
+        font-size: clamp(16px, 1.6vw, 19px);
+        font-style: italic;
+        color: var(--ink-soft);
+        max-width: 460px;
+        line-height: 1.55;
+        margin: 14px auto 0;
+      }
+      .mini-hero .lead strong {
+        color: var(--ink);
+        font-weight: 500;
+        font-style: normal;
+      }
+      .mini-hero .date {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 28px 0 12px;
+        color: var(--ink);
+      }
+      .mini-hero .date::before,
+      .mini-hero .date::after {
+        content: '';
+        width: 36px;
+        height: 1px;
+        background: var(--ink-mute);
+      }
+      .mini-hero .date span {
+        font-family: var(--font-display);
+        font-size: 18px;
+        letter-spacing: 0.18em;
+        font-weight: 500;
+      }
+      .mini-hero .date-big {
+        font-family: var(--font-display);
+        font-size: clamp(28px, 3.4vw, 40px);
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        color: var(--ink);
+        margin: 22px 0 6px;
+      }
+      .mini-hero .date-big em {
+        font-style: italic;
+        color: var(--rose-deep);
+        font-weight: 400;
+      }
+      .mini-hero .sub {
+        font-family: var(--font-accent);
+        font-style: italic;
+        font-size: 16px;
+        color: var(--ink-soft);
+        margin: 0;
+      }
+      .mini-hero .ctas {
+        display: flex;
+        gap: 12px;
+        margin-top: 36px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .mini-hero .btn {
+        font-family: var(--font-ui);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 14px 26px;
+        border-radius: 999px;
+        border: 1.5px solid var(--ink);
+        background: transparent;
+        color: var(--ink);
+        letter-spacing: 0.01em;
+      }
+      .mini-hero .btn.filled {
+        background: var(--ink);
+        color: var(--bg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="compare">
+      <h2>Modelo A — Convite pessoal (frase única)
+        <small>Eyebrow + nome + lead em itálico, data pontilhada, subtítulo curto</small>
+      </h2>
+      <div class="frame">
+        <div class="mini-hero">
+          <svg class="ornament" viewBox="0 0 240 240"><g transform="translate(120 124)"><path d="M 0 6 C -22 -22, -60 -44, -100 -36 C -108 -14, -76 6, -34 8 C -20 8, -8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 6 C 22 -22, 60 -44, 100 -36 C 108 -14, 76 6, 34 8 C 20 8, 8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 -2 C -8 6, -8 20, 0 28 C 8 20, 8 6, 0 -2 Z" fill="rgba(212, 133, 154, 0.85)"/><circle cx="0" cy="-12" r="5.5" fill="rgba(212, 133, 154, 0.95)"/></g></svg>
+          <span class="eyebrow">Você é nosso convidado especial</span>
+          <h1 class="display">Maria <span class="italic">Cecília</span></h1>
+          <p class="lead">tem o carinho de convidar você para a celebração do seu batizado</p>
+          <div class="date"><span>19 · 09 · 2026</span></div>
+          <p class="sub">às 12h00</p>
+          <div class="ctas">
+            <span class="btn filled">Confirmar presença</span>
+            <span class="btn">Ver detalhes</span>
+          </div>
+        </div>
+      </div>
+
+      <h2>Modelo B — Convite de batismo (direto)
+        <small>Eyebrow rotula o tipo de convite, lead em primeira pessoa do plural</small>
+      </h2>
+      <div class="frame">
+        <div class="mini-hero">
+          <svg class="ornament" viewBox="0 0 240 240"><g transform="translate(120 124)"><path d="M 0 6 C -22 -22, -60 -44, -100 -36 C -108 -14, -76 6, -34 8 C -20 8, -8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 6 C 22 -22, 60 -44, 100 -36 C 108 -14, 76 6, 34 8 C 20 8, 8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 -2 C -8 6, -8 20, 0 28 C 8 20, 8 6, 0 -2 Z" fill="rgba(212, 133, 154, 0.85)"/><circle cx="0" cy="-12" r="5.5" fill="rgba(212, 133, 154, 0.95)"/></g></svg>
+          <span class="eyebrow">Convite de batismo</span>
+          <h1 class="display">Maria <span class="italic">Cecília</span></h1>
+          <p class="lead">convidamos você com muito carinho para celebrar esse momento</p>
+          <div class="date"><span>19 · 09 · 2026</span></div>
+          <p class="sub">às 12h00 · Santuário Nossa Senhora de Fátima</p>
+          <div class="ctas">
+            <span class="btn filled">Confirmar presença</span>
+            <span class="btn">Ver detalhes</span>
+          </div>
+        </div>
+      </div>
+
+      <h2>Modelo C — Data em destaque
+        <small>Eyebrow curto, data grande e tipográfica vira o chamariz visual</small>
+      </h2>
+      <div class="frame">
+        <div class="mini-hero">
+          <svg class="ornament" viewBox="0 0 240 240"><g transform="translate(120 124)"><path d="M 0 6 C -22 -22, -60 -44, -100 -36 C -108 -14, -76 6, -34 8 C -20 8, -8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 6 C 22 -22, 60 -44, 100 -36 C 108 -14, 76 6, 34 8 C 20 8, 8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 -2 C -8 6, -8 20, 0 28 C 8 20, 8 6, 0 -2 Z" fill="rgba(212, 133, 154, 0.85)"/><circle cx="0" cy="-12" r="5.5" fill="rgba(212, 133, 154, 0.95)"/></g></svg>
+          <span class="eyebrow">Com muito carinho</span>
+          <h1 class="display">Maria <span class="italic">Cecília</span></h1>
+          <p class="lead">convidamos você para a celebração do seu batizado</p>
+          <div class="date-big">19 · <em>setembro</em> · 2026</div>
+          <p class="sub">às 12h00</p>
+          <div class="ctas">
+            <span class="btn filled">Confirmar presença</span>
+            <span class="btn">Ver detalhes</span>
+          </div>
+        </div>
+      </div>
+
+      <h2>Modelo D — A sua frase original, simplificada
+        <small>Eyebrow 'Convite', nome, frase corrida do convite, data+hora no subtítulo</small>
+      </h2>
+      <div class="frame">
+        <div class="mini-hero">
+          <svg class="ornament" viewBox="0 0 240 240"><g transform="translate(120 124)"><path d="M 0 6 C -22 -22, -60 -44, -100 -36 C -108 -14, -76 6, -34 8 C -20 8, -8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 6 C 22 -22, 60 -44, 100 -36 C 108 -14, 76 6, 34 8 C 20 8, 8 8, 0 6 Z" fill="rgba(212, 133, 154, 0.55)"/><path d="M 0 -2 C -8 6, -8 20, 0 28 C 8 20, 8 6, 0 -2 Z" fill="rgba(212, 133, 154, 0.85)"/><circle cx="0" cy="-12" r="5.5" fill="rgba(212, 133, 154, 0.95)"/></g></svg>
+          <span class="eyebrow">Convite</span>
+          <h1 class="display">Maria <span class="italic">Cecília</span></h1>
+          <p class="lead">convida você com muito carinho para a celebração do seu batizado</p>
+          <p class="sub">19 de setembro · 12h00</p>
+          <div class="ctas">
+            <span class="btn filled">Confirmar presença</span>
+            <span class="btn">Ver detalhes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -153,15 +153,11 @@ displayLines.forEach((el) => revealObserver.observe(el));
 const typeEyebrow = document.getElementById('typeEyebrow');
 const typeName1 = document.getElementById('typeName1');
 const typeName2 = document.getElementById('typeName2');
-const heroMeta = document.querySelector('.hero-meta');
-const heroSub = document.querySelector('.hero-sub');
+const typeLead = document.getElementById('typeLead');
+const typeDate = document.getElementById('typeDate');
+const typeSub = document.getElementById('typeSub');
 const heroCta = document.querySelector('.hero-cta');
 const scrollCue = document.querySelector('.scroll-cue');
-
-// hide other hero elements until typing finishes
-[heroMeta, heroSub, heroCta, scrollCue].forEach((el) => {
-  if (el) el.style.opacity = '0';
-});
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -174,26 +170,47 @@ async function typeInto(el, text, speed = 55) {
 }
 
 async function runTypewriter() {
-  if (hero) hero.classList.add('is-typing');
-  await sleep(450); // brief pause before starting
+  if (!hero) return;
+  // marca o hero como "em digitação" — mantém h1 e eyebrow visíveis
+  // (sem isso, o reveal base esconde o texto durante a digitação)
+  hero.classList.add('is-typing');
+
+  // 1) Eyebrow desce de cima (sem digitar)
+  await sleep(220);
+  hero.classList.add('phase-1');
+  await sleep(900);
+
+  // 2) Nome digita (Maria + Cecilia)
   await typeInto(typeName1, 'Maria', 130);
   await sleep(180);
   await typeInto(typeName2, 'Cecilia', 130);
   await sleep(380);
-  await typeInto(typeEyebrow, 'Você é nosso convidado especial', 55);
-  await sleep(420);
-  // reveal the rest of the hero
-  [heroMeta, heroSub, heroCta, scrollCue].forEach((el) => {
-    if (el) {
-      el.style.transition = 'opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out)';
-      el.style.opacity = '1';
-    }
-  });
-  // mark hero as visible so display-lines / split don't stay hidden
-  if (hero) hero.classList.add('is-visible');
-  // also flip the display-lines individually (their CSS targets .is-visible on the line itself)
-  document.querySelectorAll('.hero .display-line').forEach((el) => el.classList.add('is-visible'));
-  if (hero) hero.classList.remove('is-typing');
+
+  // 3) Lead digita
+  await typeInto(
+    typeLead,
+    'convidamos você com muito carinho para celebrar esse momento',
+    32
+  );
+  await sleep(280);
+
+  // 4) Data aparece em fade
+  hero.classList.add('phase-3');
+  await sleep(620);
+
+  // 5) Sub "às 12h00" digita
+  await typeInto(typeSub, 'às 12h00', 70);
+  await sleep(380);
+
+  // 6) CTAs e scroll-cue sobem de baixo
+  hero.classList.add('phase-4');
+  await sleep(900);
+
+  // cleanup: libera as linhas do título para o reveal padrão
+  // (mantém is-typing + phase-1/3/4 para o estado final ficar visível)
+  document
+    .querySelectorAll('.hero .display-line')
+    .forEach((el) => el.classList.add('is-visible'));
 }
 
 if (document.readyState === 'loading') {

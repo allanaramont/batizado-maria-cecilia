@@ -677,6 +677,18 @@ a {
   font-feature-settings: "liga" 0, "dlig" 0, "swsh" 0;
 }
 
+/* garante que o span interno do "Cecília" já carrega a fonte italic
+   desde o início, evitando qualquer flash de fonte diferente quando
+   o typewriter começa a preencher */
+.display .italic > span {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--rose-deep);
+  font-variation-settings: normal;
+  font-feature-settings: "liga" 0, "dlig" 0, "swsh" 0;
+}
+
 .hero-meta {
   display: inline-flex;
   align-items: center;
@@ -1946,6 +1958,11 @@ a {
   transform: translateY(0);
   opacity: 1;
 }
+
+/* stagger: CTA principal → CTA secundário → scroll-cue (efeito elevador) */
+.hero.phase-4 .hero-cta .btn-primary { transition-delay: 0s; }
+.hero.phase-4 .hero-cta .btn-ghost { transition-delay: 0.12s; }
+.hero.phase-4 .scroll-cue { transition-delay: 0.24s; }
 
 .display-line.is-visible > span {
   transform: translateY(0);

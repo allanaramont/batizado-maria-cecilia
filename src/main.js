@@ -171,12 +171,27 @@ async function typeInto(el, text, speed = 55) {
   }
 }
 
+// Variante com segmentos: cada segmento tem seu próprio speed e pauseAfter.
+// Permite respirar em palavras-chave para imitar ritmo de leitura humana.
+async function typeIntoRhythmic(el, segments) {
+  if (!el) return;
+  let acc = '';
+  for (const seg of segments) {
+    for (let i = 1; i <= seg.text.length; i++) {
+      acc += seg.text[i - 1];
+      el.textContent = acc;
+      await sleep(seg.speed);
+    }
+    if (seg.pauseAfter) await sleep(seg.pauseAfter);
+  }
+}
+
 async function runTypewriter() {
   if (!hero) return;
   hero.classList.add('is-typing');
 
-  // pausa inicial curta para a tela respirar
-  await sleep(400);
+  // pausa inicial bem curta — convite entra rápido
+  await sleep(200);
 
   // 1) Eyebrow desce de cima (-80px, ~1.4s). Já começamos a digitar
   //    o nome enquanto ele ainda está deslizando, para dar sensação de fluxo.
@@ -193,29 +208,32 @@ async function runTypewriter() {
   hero.classList.add('phase-3');
   await sleep(160);
 
-  // 4) Lead digita
-  await typeInto(
-    typeLead,
-    'convidamos você com muito carinho para celebrar esse momento',
-    18
-  );
-  await sleep(140);
+  // 4) Lead digita em ritmo de leitura humana, com micro-pausas em
+  //    "carinho" e "momento" para soar como alguém falando.
+  await typeIntoRhythmic(typeLead, [
+    { text: 'convidamos você com muito ', speed: 28 },
+    { text: 'carinho', speed: 32, pauseAfter: 140 },
+    { text: ' para celebrar esse ', speed: 28 },
+    { text: 'momento', speed: 32, pauseAfter: 160 },
+  ]);
+  await sleep(160);
 
   // 5) Data digita em três partes (mantém o "setembro" em italic rosa)
-  await typeInto(typeDatePre, '19 · ', 38);
-  await typeInto(typeDateMonth, 'setembro', 40);
-  await typeInto(typeDatePost, ' · 2026', 38);
-  await sleep(140);
+  await typeInto(typeDatePre, '19 · ', 50);
+  await typeInto(typeDateMonth, 'setembro', 55);
+  await typeInto(typeDatePost, ' · 2026', 50);
+  await sleep(160);
 
   // 6) Sub "às 12h00" digita
-  await typeInto(typeSub, 'às 12h00', 40);
-  await sleep(200);
+  await typeInto(typeSub, 'às 12h00', 55);
+  await sleep(220);
 
-  // 7) CTAs e scroll-cue sobem de baixo
+  // 7) CTAs e scroll-cue sobem de baixo com stagger via transition-delay
+  //    (definido no CSS) — sem sleep aqui, a próxima ação só rola com
+  //    scroll do usuário, então não há motivo pra segurar a função.
   hero.classList.add('phase-4');
-  await sleep(450);
 
-  // cleanup: libera as linhas do título para o reveal padrão
+  // cleanup imediato: libera as linhas do título para o reveal padrão
   document
     .querySelectorAll('.hero .display-line')
     .forEach((el) => el.classList.add('is-visible'));

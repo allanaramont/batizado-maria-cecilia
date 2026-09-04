@@ -209,11 +209,11 @@ async function runTypewriter() {
   await sleep(160);
 
   // 4) Lead digita em ritmo de leitura humana, com micro-pausas em
-  //    "Maria Cecília" (sujeito), "carinho" e "momento" para soar
-  //    como alguém falando e dar peso emocional às palavras-chave.
+  //    "carinho" e "momento" para soar como alguém falando e dar
+  //    peso emocional às palavras-chave. O nome "Maria Cecília" já
+  //    aparece no título logo acima, então não precisa repetir aqui.
   await typeIntoRhythmic(typeLead, [
-    { text: 'Maria Cecília', speed: 32, pauseAfter: 110 },
-    { text: ' convida você com muito ', speed: 28 },
+    { text: 'Convidamos você com muito ', speed: 28 },
     { text: 'carinho', speed: 32, pauseAfter: 140 },
     { text: ' para celebrar esse ', speed: 28 },
     { text: 'momento', speed: 32, pauseAfter: 160 },

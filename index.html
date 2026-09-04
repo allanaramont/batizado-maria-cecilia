@@ -622,37 +622,75 @@
 
             <!-- success state -->
             <div class="wizard-success" data-success hidden>
-              <figure class="success-photo">
-                <img
-                  src="/maria-cecilia.jpg"
-                  alt="Maria Cecilia"
-                  loading="lazy"
-                />
-              </figure>
-              <div class="success-mark" aria-hidden="true">
-                <svg viewBox="0 0 64 64" width="56" height="56">
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="30"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.2"
-                  />
-                  <path
-                    d="M20 33l9 9 16-18"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+              <!-- checklist animado: cada etapa vai sendo "cumprida" -->
+              <div class="success-steps" id="successSteps" aria-live="polite">
+                <p class="success-steps-title">Preparando tudo com carinho</p>
+                <ol class="success-step-list">
+                  <li class="success-step" data-step="church" hidden>
+                    <span class="step-icon" aria-hidden="true">⛪</span>
+                    <span class="step-label">Enviando confirmação para o Santuário</span>
+                    <span class="step-status" aria-hidden="true">
+                      <span class="step-spinner"></span>
+                    </span>
+                  </li>
+                  <li class="success-step" data-step="restaurant" hidden>
+                    <span class="step-icon" aria-hidden="true">🍽️</span>
+                    <span class="step-label">Reservando <span data-step-seats>seus lugares</span> no Bistral</span>
+                    <span class="step-status" aria-hidden="true">
+                      <span class="step-spinner"></span>
+                    </span>
+                  </li>
+                  <li class="success-step" data-step="notify" hidden>
+                    <span class="step-icon" aria-hidden="true">💌</span>
+                    <span class="step-label">Avisando a <em>Maria Cecilia</em> que <span data-step-pronoun>você</span> <span data-step-verb>estará</span> presente</span>
+                    <span class="step-status" aria-hidden="true">
+                      <span class="step-spinner"></span>
+                    </span>
+                  </li>
+                  <li class="success-step" data-step="family" hidden>
+                    <span class="step-icon" aria-hidden="true">🤍</span>
+                    <span class="step-label">A família <em>(Allan, Nathelly &amp; Rubi)</em> já tá emocionada</span>
+                    <span class="step-status" aria-hidden="true">
+                      <span class="step-spinner"></span>
+                    </span>
+                  </li>
+                </ol>
               </div>
-              <p id="successMessage" class="success-message"></p>
-              <button class="btn-mini btn-ghost" type="button" data-reset>
-                <span>Enviar outra resposta</span>
-              </button>
+
+              <!-- card final com foto + checkmark + mensagem -->
+              <div class="success-final" id="successFinal" hidden>
+                <figure class="success-photo">
+                  <img
+                    src="/maria-cecilia.jpg"
+                    alt="Maria Cecilia"
+                    loading="lazy"
+                  />
+                </figure>
+                <div class="success-mark" aria-hidden="true">
+                  <svg viewBox="0 0 64 64" width="56" height="56">
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="30"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.2"
+                    />
+                    <path
+                      d="M20 33l9 9 16-18"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+                <p id="successMessage" class="success-message"></p>
+                <button class="btn-mini btn-ghost" type="button" data-reset>
+                  <span>Enviar outra resposta</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

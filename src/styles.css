@@ -1776,6 +1776,122 @@ button.is-submitting {
   animation: panel-in 0.6s var(--ease-out);
 }
 
+/* ---- checklist animado de "preparando tudo com carinho" ---- */
+.success-steps {
+  text-align: left;
+  max-width: 460px;
+  margin: 0 auto 12px;
+  padding: 24px 28px;
+  background: var(--bg);
+  border: 1px solid var(--surface-line);
+  border-radius: var(--radius-md);
+}
+
+.success-steps-title {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-size: 18px;
+  text-align: center;
+  color: var(--ink-soft);
+  margin: 0 0 18px;
+  letter-spacing: 0.02em;
+}
+
+.success-step-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.success-step {
+  display: grid;
+  grid-template-columns: 28px 1fr 24px;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  color: var(--ink-soft);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s var(--ease-out),
+    transform 0.4s var(--ease-out),
+    color 0.4s var(--ease-out);
+}
+.success-step[hidden] {
+  display: none;
+}
+.success-step.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.success-step.is-done {
+  color: var(--ink-mute);
+}
+.success-step em {
+  font-style: italic;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.step-icon {
+  font-size: 20px;
+  line-height: 1;
+  text-align: center;
+  font-family: var(--font-accent);
+}
+
+.step-label {
+  line-height: 1.4;
+}
+
+.step-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+.step-spinner {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--rose-deep);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+  display: inline-block;
+  opacity: 0.7;
+}
+.success-step.is-done .step-spinner {
+  display: none;
+}
+
+.step-check {
+  display: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--rose-deep);
+  color: var(--bg);
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  animation: pop 0.4s var(--ease-spring);
+}
+.success-step.is-done .step-check {
+  display: inline-flex;
+}
+
+.success-final {
+  text-align: center;
+  animation: panel-in 0.6s var(--ease-out);
+}
+
 .success-photo {
   margin: 0 auto 24px;
   width: clamp(160px, 60%, 240px);

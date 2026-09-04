@@ -346,6 +346,78 @@ const errorMessage = document.getElementById('errorMessage');
 const successMessage = document.getElementById('successMessage');
 const successWrap = document.querySelector('.wizard-success');
 const rsvpInner = document.querySelector('.rsvp-inner');
+const successSteps = document.getElementById('successSteps');
+const successFinal = document.getElementById('successFinal');
+
+// roda o checklist animado: cada step aparece com fade, fica "rodando" por um
+// tempinho, depois marca como done com check. Quando todos terminam, mostra
+// o card final com a foto da Maria Cecilia.
+const runSuccessAnimation = async (payload) => {
+  const stepDefs = [];
+  if (payload.willAttend === 'sim') {
+    if (payload.attendanceMode === 'igreja' || payload.attendanceMode === 'ambos') {
+      stepDefs.push('church');
+    }
+    if (payload.attendanceMode === 'restaurante' || payload.attendanceMode === 'ambos') {
+      stepDefs.push('restaurant');
+    }
+    stepDefs.push('notify');
+  }
+  stepDefs.push('family');
+
+  // pluralização baseada no número de pessoas
+  const peopleCount =
+    payload.willAttend === 'sim' && payload.companionMode === 'count'
+      ? Number(payload.attendees) || 1
+      : 1;
+  const isPlural = peopleCount > 1;
+
+  // customiza os textos dinamicos
+  const seatsEl = successSteps?.querySelector('[data-step-seats]');
+  const pronounEl = successSteps?.querySelector('[data-step-pronoun]');
+  const verbEl = successSteps?.querySelector('[data-step-verb]');
+  if (seatsEl) seatsEl.textContent = isPlural ? `${peopleCount} lugares` : 'seu lugar';
+  if (pronounEl) pronounEl.textContent = isPlural ? 'vocês' : 'você';
+  if (verbEl) verbEl.textContent = isPlural ? 'estarão' : 'estará';
+
+  // prepara os steps visiveis (esconde os que nao vao aparecer)
+  const allSteps = successSteps?.querySelectorAll('.success-step') || [];
+  allSteps.forEach((s) => {
+    const key = s.dataset.step;
+    s.hidden = !stepDefs.includes(key);
+    s.classList.remove('is-visible', 'is-done');
+  });
+
+  // mostra o container de steps, esconde o final
+  if (successSteps) successSteps.hidden = false;
+  if (successFinal) successFinal.hidden = true;
+
+  // roda cada step em sequencia: aparece (300ms) -> fica rodando (700ms) -> marca done
+  for (const key of stepDefs) {
+    const step = successSteps?.querySelector(`[data-step="${key}"]`);
+    if (!step) continue;
+
+    // aparece
+    requestAnimationFrame(() => {
+      step.classList.add('is-visible');
+    });
+    await sleep(280);
+
+    // simula "trabalhando" por um momento
+    await sleep(720);
+
+    // marca como done
+    step.classList.add('is-done');
+    await sleep(220);
+  }
+
+  // pausa dramatica antes de revelar o card final
+  await sleep(450);
+
+  // troca: esconde steps, mostra final
+  if (successSteps) successSteps.hidden = true;
+  if (successFinal) successFinal.hidden = false;
+};
 const wpItems = document.querySelectorAll('.wp-item');
 
 const nameInput = document.getElementById('name');
@@ -530,6 +602,12 @@ const resetWizard = () => {
   if (successWrap) successWrap.hidden = true;
   if (form) form.hidden = false;
   if (rsvpInner) rsvpInner.classList.remove('is-success');
+  if (successSteps) successSteps.hidden = false;
+  if (successFinal) successFinal.hidden = true;
+  // limpa estado dos steps pra proxima vez
+  document.querySelectorAll('.success-step').forEach((s) => {
+    s.classList.remove('is-visible', 'is-done');
+  });
   showPanel(1);
 };
 
@@ -673,6 +751,8 @@ const submitConfirmation = async (e) => {
     if (successWrap) successWrap.hidden = false;
     // esconde o titulo "Estara conosco nesse dia?" pra nao confundir
     if (rsvpInner) rsvpInner.classList.add('is-success');
+    // roda o checklist animado antes de mostrar o card final
+    await runSuccessAnimation(payload);
   } catch {
     errorMessage.textContent =
       'Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.';

@@ -696,21 +696,10 @@ showPanel(1);
    ============================================================= */
 const trackVisit = () => {
   if (!VISIT_API_ENDPOINT) return;
-  const payload = {
-    page: 'Batizado da Maria Cecilia',
-    path: window.location.pathname,
-    fullUrl: window.location.href,
-    referrer: (document.referrer || '').trim(),
-    userAgent: (navigator.userAgent || '').trim(),
-    language: (navigator.language || '').trim(),
-    platform: (navigator.platform || '').trim(),
-    timezone: Intl.DateTimeFormat().resolvedOptions()?.timeZone,
-    screen: {
-      width: window.screen?.width || 0,
-      height: window.screen?.height || 0,
-    },
-    timestamp: new Date().toISOString(),
-  };
+  // payload minimo: só o path. Localizacao vem dos headers
+  // x-vercel-ip-* do proprio Vercel — não precisa de geolocation API
+  // nem de userAgent/tela/etc, é mais leve e mais respeitoso com privacidade
+  const payload = { path: window.location.pathname };
   const body = JSON.stringify(payload);
   try {
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {

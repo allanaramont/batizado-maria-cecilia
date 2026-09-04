@@ -346,77 +346,138 @@ const errorMessage = document.getElementById('errorMessage');
 const successMessage = document.getElementById('successMessage');
 const successWrap = document.querySelector('.wizard-success');
 const rsvpInner = document.querySelector('.rsvp-inner');
-const successSteps = document.getElementById('successSteps');
 const successFinal = document.getElementById('successFinal');
+const wizardLoading = document.getElementById('wizardLoading');
+const loadingIllustration = document.getElementById('loadingIllustration');
+const loadingStepTitle = document.getElementById('loadingStepTitle');
+const loadingStepDesc = document.getElementById('loadingStepDesc');
+const loadingDots = document.getElementById('loadingDots');
 
-// roda o checklist animado: cada step aparece com fade, fica "rodando" por um
-// tempinho, depois marca como done com check. Quando todos terminam, mostra
-// o card final com a foto da Maria Cecilia.
-const runSuccessAnimation = async (payload) => {
-  const stepDefs = [];
+// textos de cada etapa (titulo + descricao)
+const LOADING_STEP_DEFINITIONS = {
+  church: {
+    getTitle: () => 'Enviando confirmação para o Santuário',
+    getDescription: () => 'Nossa Senhora de Fátima',
+  },
+  restaurant: {
+    getTitle: ({ peopleCount }) =>
+      peopleCount === 1
+        ? 'Reservando seu lugar no Bistral'
+        : `Reservando ${peopleCount} lugares no Bistral`,
+    getDescription: () => 'para o almoço em família',
+  },
+  notify: {
+    getTitle: () => 'Avisando a Maria Cecilia',
+    getDescription: ({ isPlural }) =>
+      isPlural ? 'que vocês estarão com a gente' : 'que você estará com a gente',
+  },
+  family: {
+    getTitle: () => 'A família tá emocionada',
+    getDescription: () => 'Allan, Nathelly e a Rubi já tão sabendo',
+  },
+};
+
+const getPeopleCount = (payload) => {
+  if (payload.willAttend !== 'sim') return 1;
+  if (Number(payload.attendees) > 0) return Number(payload.attendees);
+
+  const namedCompanions =
+    typeof payload.companions === 'string'
+      ? payload.companions
+          .split(',')
+          .map((name) => name.trim())
+          .filter(Boolean).length
+      : 0;
+
+  return Math.max(1, namedCompanions + 1);
+};
+
+// roda o carrossel de loading em loop enquanto a API nao responde.
+// Quando a flag stop vira true, a animacao para e o card final aparece.
+let loadingLoopRunning = false;
+const runLoadingAnimation = async (payload, stopPromise) => {
+  // descobre quais etapas vao aparecer baseado na escolha da pessoa
+  const stepKeys = [];
   if (payload.willAttend === 'sim') {
     if (payload.attendanceMode === 'igreja' || payload.attendanceMode === 'ambos') {
-      stepDefs.push('church');
+      stepKeys.push('church');
     }
     if (payload.attendanceMode === 'restaurante' || payload.attendanceMode === 'ambos') {
-      stepDefs.push('restaurant');
+      stepKeys.push('restaurant');
     }
-    stepDefs.push('notify');
+    stepKeys.push('notify');
   }
-  stepDefs.push('family');
+  stepKeys.push('family');
 
-  // pluralização baseada no número de pessoas
-  const peopleCount =
-    payload.willAttend === 'sim' && payload.companionMode === 'count'
-      ? Number(payload.attendees) || 1
-      : 1;
+  // pluralizacao baseada na quantidade ou nos nomes informados
+  const peopleCount = getPeopleCount(payload);
   const isPlural = peopleCount > 1;
 
-  // customiza os textos dinamicos
-  const seatsEl = successSteps?.querySelector('[data-step-seats]');
-  const pronounEl = successSteps?.querySelector('[data-step-pronoun]');
-  const verbEl = successSteps?.querySelector('[data-step-verb]');
-  if (seatsEl) seatsEl.textContent = isPlural ? `${peopleCount} lugares` : 'seu lugar';
-  if (pronounEl) pronounEl.textContent = isPlural ? 'vocês' : 'você';
-  if (verbEl) verbEl.textContent = isPlural ? 'estarão' : 'estará';
-
-  // prepara os steps visiveis (esconde os que nao vao aparecer)
-  const allSteps = successSteps?.querySelectorAll('.success-step') || [];
-  allSteps.forEach((s) => {
-    const key = s.dataset.step;
-    s.hidden = !stepDefs.includes(key);
-    s.classList.remove('is-visible', 'is-done');
-  });
-
-  // mostra o container de steps, esconde o final
-  if (successSteps) successSteps.hidden = false;
-  if (successFinal) successFinal.hidden = true;
-
-  // roda cada step em sequencia: aparece (300ms) -> fica rodando (700ms) -> marca done
-  for (const key of stepDefs) {
-    const step = successSteps?.querySelector(`[data-step="${key}"]`);
-    if (!step) continue;
-
-    // aparece
-    requestAnimationFrame(() => {
-      step.classList.add('is-visible');
-    });
-    await sleep(280);
-
-    // simula "trabalhando" por um momento
-    await sleep(720);
-
-    // marca como done
-    step.classList.add('is-done');
-    await sleep(220);
+  // monta dots conforme a quantidade de etapas
+  if (loadingDots) {
+    loadingDots.innerHTML = stepKeys
+      .map(() => '<span class="dot"></span>')
+      .join('');
   }
 
-  // pausa dramatica antes de revelar o card final
-  await sleep(450);
+  // esconde etapas que nao vao aparecer
+  const allStepEls = loadingIllustration?.querySelectorAll('.loading-step') || [];
+  allStepEls.forEach((s) => {
+    s.classList.toggle('is-active', stepKeys.includes(s.dataset.step));
+  });
 
-  // troca: esconde steps, mostra final
-  if (successSteps) successSteps.hidden = true;
-  if (successFinal) successFinal.hidden = false;
+  // estado: mostra o loading, esconde o final
+  if (wizardLoading) wizardLoading.hidden = false;
+  if (successFinal) successFinal.hidden = true;
+
+  // loop principal: cicla pelas etapas ate stopPromise resolver
+  loadingLoopRunning = true;
+  let idx = 0;
+
+  const setStep = (i) => {
+    const key = stepKeys[i];
+    const definition = LOADING_STEP_DEFINITIONS[key];
+    const def = definition
+      ? {
+          title: definition.getTitle({ isPlural, peopleCount }),
+          desc: definition.getDescription({ isPlural, peopleCount }),
+        }
+      : null;
+    if (!def) return;
+
+    // atualiza ilustracao (crossfade automatico pelo CSS)
+    allStepEls.forEach((s) => {
+      s.classList.toggle('is-active', s.dataset.step === key);
+    });
+
+    // atualiza texto
+    if (loadingStepTitle) loadingStepTitle.textContent = def.title;
+    if (loadingStepDesc) loadingStepDesc.textContent = def.desc;
+
+    // atualiza dots: anteriores = done, atual = active
+    const dots = loadingDots?.querySelectorAll('.dot') || [];
+    dots.forEach((d, di) => {
+      d.classList.toggle('is-done', di < i);
+      d.classList.toggle('is-active', di === i);
+    });
+  };
+
+  setStep(0);
+
+  while (loadingLoopRunning) {
+    // espera 1.3s antes de avancar
+    await Promise.race([sleep(1300), stopPromise]);
+
+    if (!loadingLoopRunning) break;
+
+    // avanca para a proxima etapa (com loop)
+    idx = (idx + 1) % stepKeys.length;
+    setStep(idx);
+  }
+};
+
+const stopLoadingAnimation = () => {
+  loadingLoopRunning = false;
 };
 const wpItems = document.querySelectorAll('.wp-item');
 
@@ -602,12 +663,13 @@ const resetWizard = () => {
   if (successWrap) successWrap.hidden = true;
   if (form) form.hidden = false;
   if (rsvpInner) rsvpInner.classList.remove('is-success');
-  if (successSteps) successSteps.hidden = false;
+  if (wizardLoading) wizardLoading.hidden = true;
   if (successFinal) successFinal.hidden = true;
-  // limpa estado dos steps pra proxima vez
-  document.querySelectorAll('.success-step').forEach((s) => {
-    s.classList.remove('is-visible', 'is-done');
+  // limpa estado das ilustracoes e dots pra proxima vez
+  document.querySelectorAll('.loading-step').forEach((s) => {
+    s.classList.remove('is-active');
   });
+  stopLoadingAnimation();
   showPanel(1);
 };
 
@@ -719,8 +781,26 @@ const submitConfirmation = async (e) => {
   const submitBtn = form.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.classList.add('is-submitting');
   }
+
+  // Esconde o form e mostra o card de loading imediatamente.
+  // O loading fica em loop ate a API responder, ai mostra o card final.
+  form.hidden = true;
+  if (successWrap) successWrap.hidden = false;
+  if (rsvpInner) rsvpInner.classList.add('is-success');
+  if (wizardLoading) wizardLoading.hidden = false;
+  if (successFinal) successFinal.hidden = true;
+
+  // Cria um Promise que so resolve quando o submit termina (sucesso ou erro)
+  let stopResolve;
+  const stopPromise = new Promise((resolve) => {
+    stopResolve = resolve;
+  });
+
+  // Dispara o carrossel de loading em paralelo com o fetch
+  const loadingPromise = runLoadingAnimation(payload, stopPromise).catch(() => {
+    // ignora erro do loop — so queremos parar de animar
+  });
 
   try {
     const response = await fetch(API_ENDPOINT, {
@@ -730,6 +810,11 @@ const submitConfirmation = async (e) => {
     });
 
     const result = await response.json().catch(() => ({}));
+
+    // Para o loop de loading independente do resultado
+    stopResolve();
+    stopLoadingAnimation();
+    await loadingPromise;
 
     if (!response.ok) {
       // Mensagens de erro mais uteis dependendo do status
@@ -742,24 +827,34 @@ const submitConfirmation = async (e) => {
       } else {
         errorMessage.textContent = result?.error || 'Nao foi possivel enviar a confirmacao.';
       }
+      // Volta a mostrar o form pra pessoa tentar de novo
+      form.hidden = false;
+      if (successWrap) successWrap.hidden = true;
+      if (rsvpInner) rsvpInner.classList.remove('is-success');
+      if (wizardLoading) wizardLoading.hidden = true;
       return;
     }
 
     successMessage.textContent =
       payload.willAttend === 'sim' ? SUCCESS_MESSAGE_SIM : SUCCESS_MESSAGE_NAO;
-    form.hidden = true;
-    if (successWrap) successWrap.hidden = false;
-    // esconde o titulo "Estara conosco nesse dia?" pra nao confundir
-    if (rsvpInner) rsvpInner.classList.add('is-success');
-    // roda o checklist animado antes de mostrar o card final
-    await runSuccessAnimation(payload);
+    // Esconde o loading e mostra o card final com foto + check
+    if (wizardLoading) wizardLoading.hidden = true;
+    if (successFinal) successFinal.hidden = false;
   } catch {
+    // Para o loop tambem em caso de erro de rede
+    stopResolve();
+    stopLoadingAnimation();
+    await loadingPromise;
     errorMessage.textContent =
       'Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.';
+    // Volta a mostrar o form
+    form.hidden = false;
+    if (successWrap) successWrap.hidden = true;
+    if (rsvpInner) rsvpInner.classList.remove('is-success');
+    if (wizardLoading) wizardLoading.hidden = true;
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.classList.remove('is-submitting');
     }
   }
 };

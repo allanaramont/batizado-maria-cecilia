@@ -3,10 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Batizado da Maria Cecilia</title>
+    <meta name="theme-color" content="#FAF6F1" />
+    <title>Batizado da Maria Cecilia · 19 de setembro de 2026</title>
     <meta
       name="description"
-      content="Convite do Batizado da Maria Cecilia: 19 de setembro de 2026, no Santuário Nossa Senhora de Fátima, às 12:00."
+      content="Convite do Batizado da Maria Cecilia — 19 de setembro de 2026, no Santuário Nossa Senhora de Fátima, às 12h00. Confirme sua presença."
     />
     <meta property="og:title" content="Batizado da Maria Cecilia" />
     <meta
@@ -14,7 +15,7 @@
       content="Uma data especial de fé, amor e gratidão. Confira os detalhes e confirme sua presença."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/batizado-og.svg" />
+    <meta property="og:image" content="/maria-cecilia.jpg" />
     <meta property="og:url" content="https://batizado.desenvbr.com" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Batizado da Maria Cecilia" />
@@ -22,12 +23,12 @@
       name="twitter:description"
       content="Você está convidado para o Batizado da Maria Cecilia, em 19 de setembro de 2026."
     />
-    <meta name="twitter:image" content="/batizado-og.svg" />
+    <meta name="twitter:image" content="/maria-cecilia.jpg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito:wght@400;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap"
       rel="stylesheet"
     />
 
@@ -37,240 +38,618 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <div class="aura aura-1" aria-hidden="true"></div>
-    <div class="aura aura-2" aria-hidden="true"></div>
-    <div class="aura aura-3" aria-hidden="true"></div>
+    <!-- background layers -->
+    <div class="bg-mesh" aria-hidden="true"></div>
+    <div class="bg-grain" aria-hidden="true"></div>
 
-    <div class="floating-elements" aria-hidden="true">
-      <span class="petal petal-1">✿</span>
-      <span class="petal petal-2">❀</span>
-      <span class="petal petal-3">🦋</span>
-      <span class="petal petal-4">✿</span>
-      <span class="petal petal-5">🕊️</span>
+    <!-- custom cursor -->
+    <div class="cursor" aria-hidden="true">
+      <div class="cursor-dot"></div>
+      <div class="cursor-ring"></div>
     </div>
-    <div class="grain" aria-hidden="true"></div>
-    <div class="floating-sparkles" aria-hidden="true">
-      <span></span><span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-    <div class="scroll-progress" aria-hidden="true">
-      <span id="scrollProgressBar"></span>
-    </div>
+
+    <!-- top navigation -->
+    <header class="topbar" data-reveal>
+      <a class="brand" href="#inicio" aria-label="Voltar ao início">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="28" height="28">
+            <defs>
+              <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="rgb(212, 133, 154)" />
+                <stop offset="100%" stop-color="rgb(184, 90, 110)" />
+              </linearGradient>
+            </defs>
+            <circle cx="20" cy="20" r="18" fill="none" stroke="url(#brandGrad)" stroke-width="1.2" />
+            <text
+              x="50%"
+              y="55%"
+              text-anchor="middle"
+              dominant-baseline="middle"
+              font-family="Cormorant Garamond, serif"
+              font-style="italic"
+              font-size="16"
+              fill="currentColor"
+            >
+              mc
+            </text>
+          </svg>
+        </span>
+        <span class="brand-text">Maria Cecilia</span>
+      </a>
+
+      <nav class="topnav" aria-label="Navegação principal">
+        <a href="#contagem">Contagem</a>
+        <a href="#programacao">O dia</a>
+        <a href="#rsvp">RSVP</a>
+      </nav>
+
+      <a class="cta-mini" href="#rsvp">
+        <span>Confirmar</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+          <path
+            d="M5 12h14M13 5l7 7-7 7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+    </header>
 
     <main class="page">
-      <section class="hero section-card reveal" id="inicio" data-reveal-delay="0">
-        <p class="label">Batizado da</p>
-        <h1>Maria Cecilia</h1>
-        <p class="date">19 de setembro de 2026</p>
-        <p class="soft-text leading-wide">
-          Um dia de fé, amor e gratidão. O batizado da Maria Cecilia é o momento
-          em que apresentaremos nossa filha a Deus, celebrando o início de sua caminhada
-          na fé.
+      <!-- HERO -->
+      <section class="hero" id="inicio">
+        <div class="hero-ornament" aria-hidden="true">
+          <svg viewBox="0 0 200 200" width="100%" height="100%">
+            <defs>
+              <linearGradient id="heroOrn" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="rgb(212, 133, 154)" stop-opacity="0.5" />
+                <stop offset="100%" stop-color="rgb(184, 90, 110)" stop-opacity="0.4" />
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#heroOrn)" stroke-width="0.6" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#heroOrn)" stroke-width="0.6" />
+            <circle cx="100" cy="100" r="40" fill="none" stroke="url(#heroOrn)" stroke-width="0.6" />
+          </svg>
+        </div>
+
+        <p class="eyebrow" data-split="word">
+          <span>Você</span>
+          <span>é</span>
+          <span>nosso</span>
+          <span>convidado</span>
+          <span>especial</span>
         </p>
-        <a class="btn btn-primary" href="#confirmacao">Confirmar presença</a>
-        <p class="blessing">Que Deus abençoe cada passo de sua caminhada.</p>
-        <a class="scroll-cue" href="#batizado" aria-label="Ir para o próximo bloco">
-          <span>Role para baixo</span>
-          <span class="chevron"></span>
+
+        <h1 class="display" data-split="word">
+          <span class="display-line"><span>Maria</span></span>
+          <span class="display-line italic"><span>Cecilia</span></span>
+        </h1>
+
+        <div class="hero-meta">
+          <span class="hero-divider" aria-hidden="true"></span>
+          <p class="hero-date">19 <span class="hero-dot">·</span> 09 <span class="hero-dot">·</span> 2026</p>
+          <span class="hero-divider" aria-hidden="true"></span>
+        </div>
+
+        <p class="hero-sub">Celebração do batizado · 12h00</p>
+
+        <div class="hero-cta">
+          <a class="btn-magnetic btn-primary" href="#rsvp" data-cursor="hover">
+            <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+            <span class="btn-text">Confirmar presença</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="btn-icon">
+              <path
+                d="M5 12h14M13 5l7 7-7 7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </a>
+          <a class="btn-magnetic btn-ghost" href="#programacao" data-cursor="hover">
+            <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+            <span class="btn-text">Ver detalhes</span>
+          </a>
+        </div>
+
+        <a class="scroll-cue" href="#contagem" aria-label="Ir para o próximo bloco">
+          <span class="scroll-cue-line" aria-hidden="true"></span>
+          <span class="scroll-cue-label">Role para descobrir</span>
         </a>
       </section>
 
-      <section class="section-card reveal section-accent" id="batizado" data-reveal-delay="80">
-        <p class="section-label">O batizado</p>
-        <h2>O início de uma linda caminhada de fé</h2>
-        <p>
-          O primeiro momento do dia será a celebração do Batizado na igreja,
-          em um encontro de oração, entrega e gratidão.
-        </p>
+      <!-- CONTAGEM REGRESSIVA -->
+      <section class="contagem section" id="contagem" data-reveal>
+        <p class="eyebrow center">Faltam</p>
+        <div class="countdown" aria-live="polite" aria-atomic="true">
+          <div class="cd-cell">
+            <span class="cd-num" data-cd="days">--</span>
+            <span class="cd-label">dias</span>
+          </div>
+          <span class="cd-sep" aria-hidden="true">:</span>
+          <div class="cd-cell">
+            <span class="cd-num" data-cd="hours">--</span>
+            <span class="cd-label">horas</span>
+          </div>
+          <span class="cd-sep" aria-hidden="true">:</span>
+          <div class="cd-cell">
+            <span class="cd-num" data-cd="minutes">--</span>
+            <span class="cd-label">min</span>
+          </div>
+          <span class="cd-sep" aria-hidden="true">:</span>
+          <div class="cd-cell">
+            <span class="cd-num" data-cd="seconds">--</span>
+            <span class="cd-label">seg</span>
+          </div>
+        </div>
+        <h2 class="section-title center cd-title">Para o grande dia</h2>
+      </section>
 
-        <div class="info-grid">
-          <p><strong>Igreja:</strong> SANTUÁRIO NOSSA SENHORA DE FÁTIMA</p>
-          <p><strong>Data:</strong> 19 de setembro de 2026</p>
-          <p><strong>Horário:</strong> 12:00</p>
-          <p>
-            <strong>Endereço:</strong> Av. Alfredo Balthazar da Silveira, 900.
-            Recreio dos Bandeirantes. (Próximo ao Barra World)
+      <!-- PROGRAMAÇÃO + COMO CHEGAR (fundidos) -->
+      <section class="programacao section" id="programacao" data-reveal>
+        <div class="section-head">
+          <p class="eyebrow">O dia · como chegar</p>
+          <h2 class="section-title">Uma manhã de bênçãos, uma tarde de celebração</h2>
+          <p class="section-lead">
+            Dois momentos que desenhamos com carinho. Toque em um dos mapas
+            abaixo para traçar a rota até cada endereço.
           </p>
         </div>
 
-        <p class="soft-text">
-          É com muita alegria e gratidão a Deus que convidamos você para
-          testemunhar esse momento tão especial na vida da Maria Cecilia.
-        </p>
+        <ol class="timeline">
+          <li class="t-item" data-reveal>
+            <div class="t-time">
+              <span class="t-time-num">12:00</span>
+              <span class="t-time-tag">Manhã</span>
+            </div>
+            <div class="t-card">
+              <div class="t-card-head">
+                <span class="t-pill">Cerimônia</span>
+                <span class="t-ornament" aria-hidden="true">✦</span>
+              </div>
+              <figure class="t-media">
+                <img
+                  src="/santuario.jpg"
+                  alt="Fachada do Santuário Nossa Senhora de Fátima"
+                  width="1600"
+                  height="900"
+                  loading="lazy"
+                />
+              </figure>
+              <h3 class="t-title">O batismo</h3>
+              <p class="t-text">
+                O primeiro momento do dia é a celebração do Batizado na igreja.
+                Um instante de fé e gratidão que queremos compartilhar com você.
+              </p>
+              <div class="t-place">
+                <p class="t-place-name">Santuário Nossa Senhora de Fátima</p>
+                <p class="t-place-addr">Av. Alfredo Balthazar da Silveira, 900 · Recreio</p>
+                <div class="t-place-actions">
+                  <a
+                    class="btn-mini btn-primary"
+                    href="https://www.google.com/maps/search/?api=1&query=Santu%C3%A1rio%20Nossa%20Senhora%20de%20F%C3%A1tima%2C%20Av.%20Alfredo%20Balthazar%20da%20Silveira%2C%20900%2C%20Rio%20de%20Janeiro"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor="hover"
+                  >
+                    <span>Maps</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                      <path
+                        d="M7 17L17 7M9 7h8v8"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </a>
+                  <a
+                    class="btn-mini btn-ghost"
+                    href="https://www.waze.com/ul?q=Santu%C3%A1rio%20Nossa%20Senhora%20de%20F%C3%A1tima%2C%20Av.%20Alfredo%20Balthazar%20da%20Silveira%2C%20900%2C%20Rio%20de%20Janeiro&navigate=yes"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor="hover"
+                  >
+                    <span>Waze</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                      <path
+                        d="M7 17L17 7M9 7h8v8"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
 
-        <div class="button-row">
-          <a
-            class="btn btn-primary"
-            href="https://www.google.com/maps/search/?api=1&query=Santuário%20Nossa%20Senhora%20de%20Fátima%2C%20Av.%20Alfredo%20Balthazar%20da%20Silveira%2C%20900%2C%20Rio%20de%20Janeiro"
-            target="_blank"
-            rel="noreferrer"
-            >📍 Ver no Google Maps</a
-          >
-          <a
-            class="btn btn-outline"
-            href="https://www.waze.com/ul?q=Santuário%20Nossa%20Senhora%20de%20Fátima%20Av.%20Alfredo%20Balthazar%20da%20Silveira%2C%20900%2C%20Rio%20de%20Janeiro&navigate=yes"
-            target="_blank"
-            rel="noreferrer"
-            >🧭 Abrir no Waze</a
-          >
-        </div>
+          <li class="t-item" data-reveal>
+            <div class="t-time">
+              <span class="t-time-num">13:30</span>
+              <span class="t-time-tag">Tarde</span>
+            </div>
+            <div class="t-card">
+              <div class="t-card-head">
+                <span class="t-pill">Confraternização</span>
+                <span class="t-ornament" aria-hidden="true">✦</span>
+              </div>
+              <figure class="t-media">
+                <img
+                  src="/bistral.jpg"
+                  alt="Vista da orla do Recreio dos Bandeirantes, onde fica o Bistral Rio"
+                  width="1600"
+                  height="900"
+                  loading="lazy"
+                />
+              </figure>
+              <h3 class="t-title">O almoço em família</h3>
+              <p class="t-text">
+                Seguimos para o almoço, a aproximadamente 5 minutos de carro da
+                cerimônia. Reservamos o 2º andar para receber a família e os
+                amigos.
+              </p>
+              <div class="t-place">
+                <p class="t-place-name">Restaurante Bistral Rio</p>
+                <p class="t-place-addr">Av. Lúcio Costa, 16.756 · 2º andar</p>
+                <div class="t-place-actions">
+                  <a
+                    class="btn-mini btn-primary"
+                    href="https://www.google.com/maps/dir/?api=1&origin=Santu%C3%A1rio%20Nossa%20Senhora%20de%20F%C3%A1tima%2C%20Av.%20Alfredo%20Balthazar%20da%20Silveira%2C%20900%2C%20Rio%20de%20Janeiro&destination=Bistral%20Rio%2C%20Av.%20L%C3%BAcio%20Costa%2C%2016.756%2C%20Rio%20de%20Janeiro"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor="hover"
+                  >
+                    <span>Maps</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                      <path
+                        d="M7 17L17 7M9 7h8v8"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </a>
+                  <a
+                    class="btn-mini btn-ghost"
+                    href="https://www.waze.com/ul?from=Santu%C3%A1rio%20Nossa%20Senhora%20de%20F%C3%A1tima%2C%20Av.%20Alfredo%20Balthazar%20da%20Silveira%2C%20900%2C%20Rio%20de%20Janeiro&to=Bistral%20Rio%2C%20Av.%20L%C3%BAcio%20Costa%2C%2016.756&navigate=yes"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor="hover"
+                  >
+                    <span>Waze</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                      <path
+                        d="M7 17L17 7M9 7h8v8"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </a>
+                  <a
+                    class="btn-mini btn-ghost"
+                    href="https://drive.google.com/file/d/1l9G0b3zbysQJsCHgHEzj4yQbpirxSinN/view"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor="hover"
+                  >
+                    <span>Cardápio</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                      <path
+                        d="M7 17L17 7M9 7h8v8"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ol>
       </section>
 
-      <section class="section-card reveal transition-card" data-reveal-delay="140">
-        <p class="section-label">Depois do batizado</p>
-        <h2>Depois da celebração, seguimos em comunhão</h2>
-        <p class="pill-row">Igreja → 🚗 → Restaurante</p>
-        <p>
-          Após o Batizado, seguiremos para um almoço especial em comemoração à Maria Cecilia.
-        </p>
-        <p class="soft-text">
-          O restaurante fica aproximadamente 5 minutos de carro da igreja.
-          O deslocamento entre os locais deverá ser feito de carro, pois não é um trajeto adequado
-          para caminhada.
-        </p>
-      </section>
+      <!-- LOCAIS (removido - fundido com a timeline) -->
 
-      <section class="section-card reveal" data-reveal-delay="200">
-        <p class="section-label">O almoço</p>
-        <h2>Um almoço para celebrar juntos</h2>
 
-        <div class="info-grid">
-          <p><strong>Restaurante:</strong> Bistral Rio</p>
-          <p><strong>Horário aproximado:</strong> 13:30</p>
-          <p><strong>Endereço:</strong> Av. Lúcio Costa, 16.756</p>
-        </div>
+      <!-- RSVP / WIZARD -->
+      <section class="rsvp section" id="rsvp" data-reveal>
+        <div class="rsvp-inner">
+          <div class="section-head">
+            <p class="eyebrow">Confirmação</p>
+            <h2 class="section-title">Estará conosco nesse dia?</h2>
+            <p class="section-lead">
+              Sua resposta nos ajuda a preparar tudo com o cuidado que a Maria
+              Cecilia merece.
+            </p>
+          </div>
 
-        <p>
-          Reservamos com carinho o segundo andar para receber nossa família e nossos amigos depois
-          da celebração. O restaurante trabalha com comanda individual, então cada convidado poderá
-          escolher seus pratos e bebidas no local e realizar o próprio pagamento.
-        </p>
+          <div class="wizard" data-step="1" data-total-steps="4">
+            <ol class="wizard-progress" aria-hidden="true">
+              <li class="wp-item is-active" data-progress="1"><span>01</span> Presença</li>
+              <li class="wp-item" data-progress="2"><span>02</span> Detalhes</li>
+              <li class="wp-item" data-progress="3"><span>03</span> Momentos</li>
+              <li class="wp-item" data-progress="4"><span>04</span> Revisão</li>
+            </ol>
 
-        <div class="button-row">
-          <a
-            class="btn btn-primary"
-            href="https://www.google.com/maps/search/?api=1&query=Bistral%20Rio%2C%20Av.%20Lúcio%20Costa%2C%2016.756%2C%20Rio%20de%20Janeiro"
-            target="_blank"
-            rel="noreferrer"
-            >📍 Ver no Google Maps</a
-          >
-          <a
-            class="btn btn-outline"
-            href="https://www.waze.com/ul?q=Bistral%20Rio%20Av.%20Lúcio%20Costa%2C%2016.756%2C%20Rio%20de%20Janeiro&navigate=yes"
-            target="_blank"
-            rel="noreferrer"
-            >🧭 Abrir no Waze</a
-          >
-        </div>
-      </section>
+            <!-- step 1: presença -->
+            <div class="wizard-panel" data-panel="1">
+              <p class="wizard-question">Você estará presente?</p>
+              <div class="choice-row">
+                <button class="btn-magnetic btn-primary" type="button" data-choice="sim" data-cursor="hover">
+                  <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                  <span class="btn-text">Sim, eu vou</span>
+                </button>
+                <button class="btn-magnetic btn-ghost" type="button" data-choice="nao" data-cursor="hover">
+                  <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                  <span class="btn-text">Não poderei ir</span>
+                </button>
+              </div>
+            </div>
 
-      <section class="section-card reveal" data-reveal-delay="260">
-        <p class="section-label">Cardápio</p>
-        <h2>Conheça o cardápio do restaurante</h2>
-        <p>
-          O cardápio pode ser atualizado depois sem mexer no restante do site.
-          Para substituir, basta atualizar o link do botão no código.
-        </p>
-        <a
-          id="menuButton"
-          class="btn btn-primary"
-          href="https://drive.google.com/file/d/1l9G0b3zbysQJsCHgHEzj4yQbpirxSinN/view"
-          target="_blank"
-          rel="noreferrer"
-          >Ver cardápio</a
-        >
-      </section>
+            <form id="confirmationForm" class="wizard-form" novalidate>
+              <!-- step 2: dados -->
+              <div class="wizard-panel" data-panel="2" hidden>
+                <p class="wizard-question">Conte-nos sobre você</p>
+                <div class="field">
+                  <label for="name">Nome completo</label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autocomplete="name"
+                    placeholder="Como devemos te chamar?"
+                    required
+                  />
+                </div>
 
-      <section
-        id="confirmacao"
-        class="section-card section-confirmation reveal"
-        data-reveal-delay="320"
-      >
-        <p class="section-label">Confirmação de presença</p>
-        <h2>Você estará conosco nesse dia tão especial?</h2>
+                <div class="field">
+                  <span class="field-label">Como você quer registrar quem vem com você? <em>(opcional)</em></span>
+                  <div class="companion-toggle">
+                    <button
+                      class="btn-magnetic btn-ghost"
+                      type="button"
+                      data-companion-mode="count"
+                      data-cursor="hover"
+                    >
+                      <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                      <span class="btn-text">
+                        <span class="m-icon" aria-hidden="true">#</span>
+                        <span>Quantidade de pessoas</span>
+                      </span>
+                    </button>
+                    <button
+                      class="btn-magnetic btn-ghost"
+                      type="button"
+                      data-companion-mode="names"
+                      data-cursor="hover"
+                    >
+                      <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                      <span class="btn-text">
+                        <span class="m-icon" aria-hidden="true">✎</span>
+                        <span>Nomes dos acompanhantes</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
 
-        <div class="choice-grid">
-          <button id="attendYes" class="btn" type="button">Sim, eu vou</button>
-          <button id="attendNo" class="btn btn-outline" type="button">Não poderei ir</button>
-        </div>
+                <div class="companion-area" data-companion-area="count" hidden>
+                  <div class="field">
+                    <span class="field-label">Quantas pessoas, contando com você?</span>
+                    <div class="counter">
+                      <button id="decrease" type="button" aria-label="Diminuir">−</button>
+                      <input
+                        id="attendees"
+                        name="attendees"
+                        type="text"
+                        readonly
+                        value="1"
+                        aria-live="polite"
+                      />
+                      <button id="increase" type="button" aria-label="Aumentar">+</button>
+                    </div>
+                  </div>
+                </div>
 
-        <form id="confirmationForm" class="confirmation-form hidden" novalidate>
-          <label for="name">Nome completo</label>
-          <input
-            id="name"
-            type="text"
-            autocomplete="name"
-            placeholder="Digite seu nome completo"
-            required
-          />
+                <div class="companion-area" data-companion-area="names" hidden>
+                  <div class="field">
+                    <span class="field-label">Quem mais vai com você?</span>
+                    <div class="companion-list" id="companionList"></div>
+                    <button class="btn-mini btn-ghost" type="button" id="addCompanion" data-cursor="hover">
+                      <span class="ic-plus" aria-hidden="true">+</span>
+                      <span>Adicionar acompanhante</span>
+                    </button>
+                  </div>
+                </div>
 
-          <div id="momentChoiceGroup" class="hidden">
-            <label>Você participará de quais momentos?</label>
-            <div class="choice-grid moment-grid">
-              <button id="momentChurch" class="btn" type="button">🛐 Só Igreja</button>
-              <button id="momentRestaurant" class="btn btn-outline" type="button">
-                🍽️ Só Restaurante
-              </button>
-              <button id="momentBoth" class="btn btn-outline" type="button">
-                ⛪🍽️ Igreja e Restaurante
+                <div class="wizard-nav">
+                  <button class="btn-mini btn-ghost" type="button" data-back>
+                    <span>Voltar</span>
+                  </button>
+                  <button class="btn-magnetic btn-primary" type="button" data-next data-cursor="hover">
+                    <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                    <span class="btn-text">Continuar</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- step 3: momentos -->
+              <div class="wizard-panel" data-panel="3" hidden>
+                <p class="wizard-question">Quais momentos você vai acompanhar?</p>
+                <div class="moment-stack">
+                  <button
+                    class="btn-magnetic btn-ghost"
+                    type="button"
+                    data-moment="igreja"
+                    data-cursor="hover"
+                  >
+                    <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                    <span class="btn-text">
+                      <span class="m-icon" aria-hidden="true">⛪</span>
+                      <span>Só a Igreja</span>
+                    </span>
+                  </button>
+                  <button
+                    class="btn-magnetic btn-ghost"
+                    type="button"
+                    data-moment="restaurante"
+                    data-cursor="hover"
+                  >
+                    <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                    <span class="btn-text">
+                      <span class="m-icon" aria-hidden="true">🍽️</span>
+                      <span>Só o Restaurante</span>
+                    </span>
+                  </button>
+                  <button
+                    class="btn-magnetic btn-ghost"
+                    type="button"
+                    data-moment="ambos"
+                    data-cursor="hover"
+                  >
+                    <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                    <span class="btn-text">
+                      <span class="m-icon" aria-hidden="true">✦</span>
+                      <span>Igreja e Restaurante</span>
+                    </span>
+                  </button>
+                </div>
+
+                <div class="wizard-nav">
+                  <button class="btn-mini btn-ghost" type="button" data-back>
+                    <span>Voltar</span>
+                  </button>
+                  <button class="btn-magnetic btn-primary" type="button" data-next data-cursor="hover">
+                    <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                    <span class="btn-text">Continuar</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- step 4: revisão + submit -->
+              <div class="wizard-panel" data-panel="4" hidden>
+                <p class="wizard-question">Confirme os dados</p>
+                <ul class="review" aria-live="polite">
+                  <li><span class="r-label">Nome</span><span class="r-val" data-r="name">—</span></li>
+                  <li>
+                    <span class="r-label">Vai com você</span>
+                    <span class="r-val" data-r="attendees">—</span>
+                  </li>
+                  <li>
+                    <span class="r-label">Momentos</span>
+                    <span class="r-val" data-r="moment">—</span>
+                  </li>
+                </ul>
+
+                <div class="wizard-nav wizard-nav-final">
+                  <button class="btn-mini btn-ghost" type="button" data-back>
+                    <span>Voltar</span>
+                  </button>
+                  <button class="btn-magnetic btn-primary" type="submit" data-cursor="hover">
+                    <span class="btn-bg" aria-hidden="true"></span>
+            <span class="btn-shine" aria-hidden="true"></span>
+                    <span class="btn-text">Enviar confirmação</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="btn-icon">
+                      <path
+                        d="M5 12h14M13 5l7 7-7 7"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <p id="errorMessage" class="error-message" role="alert"></p>
+            </form>
+
+            <!-- success state -->
+            <div class="wizard-success" data-success hidden>
+              <figure class="success-photo">
+                <img
+                  src="/maria-cecilia.jpg"
+                  alt="Maria Cecília"
+                  loading="lazy"
+                />
+              </figure>
+              <div class="success-mark" aria-hidden="true">
+                <svg viewBox="0 0 64 64" width="56" height="56">
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="30"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                  <path
+                    d="M20 33l9 9 16-18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+              <p id="successMessage" class="success-message"></p>
+              <button class="btn-mini btn-ghost" type="button" data-reset>
+                <span>Enviar outra resposta</span>
               </button>
             </div>
           </div>
-
-          <div id="attendeesGroup" class="hidden">
-            <label for="attendees">Quantas pessoas estarão presentes?</label>
-            <div class="counter">
-              <button id="decrease" type="button" aria-label="Diminuir" disabled>−</button>
-              <input id="attendees" type="text" readonly value="1" aria-live="polite" />
-              <button id="increase" type="button" aria-label="Aumentar">+</button>
-            </div>
-          </div>
-
-          <div id="companionsGroup" class="hidden">
-            <label for="companions">Quem mais estará com você? (opcional)</label>
-            <input id="companions" type="text" placeholder="Nomes dos acompanhantes" />
-          </div>
-
-          <div id="notesGroup" class="hidden">
-            <label for="note">Observações (opcional)</label>
-            <textarea
-              id="note"
-              rows="3"
-              placeholder="Mensagem ou alguma observação"
-            ></textarea>
-          </div>
-
-          <button class="btn btn-primary btn-submit" type="submit">
-            <span>Enviar confirmação</span>
-          </button>
-        </form>
-
-        <p id="successMessage" class="success-message hidden"></p>
-        <p id="errorMessage" class="error-message"></p>
+        </div>
       </section>
 
-      <section class="section-card reveal" data-reveal-delay="360">
-        <p class="section-label">Informações importantes</p>
-        <h2>Checklist para o dia</h2>
-
-        <ul class="info-list-compact">
-          <li>Horário do Batizado: 12:00</li>
-          <li>Endereço da igreja: Av. Alfredo Balthazar da Silveira, 900.</li>
-          <li>Horário aproximado do almoço: 13:30</li>
-          <li>Endereço do restaurante: Av. Lúcio Costa, 16.756</li>
-          <li>Deslocamento entre locais: 5 minutos de carro</li>
-          <li>Comanda individual no restaurante</li>
-          <li>Contato dos anfitriões: (a definir)</li>
-        </ul>
-      </section>
-
-      <footer class="footer">
-        <p>
+      <!-- FOOTER -->
+      <footer class="footer" data-reveal>
+        <div class="footer-ornament" aria-hidden="true">✦</div>
+        <blockquote>
           “Que este seja apenas o começo de uma vida inteira guiada pela fé,
           pelo amor e pelas bênçãos de Deus.”
+        </blockquote>
+        <p class="footer-sign">
+          Com carinho, <em>Nathelly</em>, <em>Allan</em> e
+          <em>Maria Cecilia</em> <span aria-hidden="true">🤍</span>
         </p>
-        <p>Com carinho, Nathelly, Allan e Maria Cecilia 🤍</p>
+        <p class="footer-meta">19 · 09 · 2026 · Rio de Janeiro</p>
       </footer>
     </main>
+
+    <!-- progress bar -->
+    <div class="scroll-progress" aria-hidden="true">
+      <span id="scrollProgressBar"></span>
+    </div>
   </body>
 </html>

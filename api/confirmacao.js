@@ -1,3 +1,5 @@
+import { MongoClient } from "mongodb";
+
 const slackBotToken = process.env.SLACK_BOT_TOKEN;
 const defaultSlackChannelId = "C0BUTFJ35QA";
 const slackChannelId =
@@ -8,17 +10,17 @@ const slackChannelId =
   defaultSlackChannelId;
 const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
 
-const supabaseUrl =
-  process.env.SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  process.env.BATIZADO_SUPABASE_URL;
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_SERVICE_KEY ||
-  process.env.BATIZADO_SUPABASE_SERVICE_KEY;
-const supabaseTable =
-  process.env.SUPABASE_CONFIRMATION_TABLE ||
-  process.env.BATIZADO_SUPABASE_TABLE ||
+const mongodbUri =
+  process.env.MONGODB_URI ||
+  process.env.MONGODB_URL ||
+  process.env.BATIZADO_MONGODB_URI;
+const mongodbDbName =
+  process.env.MONGODB_DB_NAME ||
+  process.env.BATIZADO_MONGODB_DB_NAME ||
+  "batizado";
+const mongodbCollection =
+  process.env.MONGODB_CONFIRMATION_COLLECTION ||
+  process.env.BATIZADO_MONGODB_COLLECTION ||
   "batizado_confirmacoes";
 
 const CHURCH_NAME = "SANTUÁRIO NOSSA SENHORA DE FÁTIMA";
@@ -33,6 +35,11 @@ const MENU_FILE_URL =
   "https://drive.google.com/file/d/1l9G0b3zbysQJsCHgHEzj4yQbpirxSinN/view";
 
 const VALID_MOMENTS = new Set(["igreja", "restaurante", "ambos"]);
+
+const mongoCache = {
+  client: null,
+  db: null,
+};
 
 function parseBody(req) {
   if (!req) return {};
@@ -91,6 +98,18 @@ function buildListForMoment(moment) {
   return "Igreja + Restaurante";
 }
 
+function formatPeopleCount(value) {
+  return `${value} pessoa${value === 1 ? "" : "s"}`;
+}
+
+function normalizePeople(value) {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isNaN(parsed) || parsed < 1) {
+    return 1;
+  }
+  return parsed;
+}
+
 function chunkText(rawText, chunkLength = 2800) {
   if (!rawText) {
     return [];
@@ -127,44 +146,60 @@ function chunkText(rawText, chunkLength = 2800) {
 function sanitizeInt(value) {
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) {
-    return 0;
+    return 1;
   }
   return Math.max(1, parsed);
 }
 
+function parseWillAttend(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return value === 1;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "sim" || normalized === "s" || normalized === "yes" || normalized === "true" || normalized === "1") {
+      return true;
+    }
+    if (normalized === "nao" || normalized === "não" || normalized === "n" || normalized === "no" || normalized === "false" || normalized === "0") {
+      return false;
+    }
+  }
+
+  return Boolean(value);
+}
+
 function formatConfirmationLine(item) {
-  const momentText = item.will_attend
-    ? buildListForMoment(item.moment || "")
-    : "-";
+  const people = normalizePeople(item.attendees);
+  const attendeesText = formatPeopleCount(people);
+  const momentText = item.will_attend ? buildListForMoment(item.moment || "") : "-";
 
-  const attendeesText = item.will_attend
-    ? `${item.attendees} pessoa${item.attendees === 1 ? "" : "s"}`
-    : "0 pessoas";
-  const companionsText = item.companions
-    ? ` • Acompanhantes: ${item.companions}`
-    : "";
-  const noteText = item.note ? ` • Obs: ${item.note}` : "";
-
-  return `• *${item.name}* • ${attendeesText} • ${momentText}${item.will_attend ? "" : ""}${
-    item.will_attend ? companionsText : ""
-  }${noteText}`;
+  return `• *${item.name}* • ${attendeesText} • ${momentText}`;
 }
 
 function buildListText(rows) {
   const confirmed = rows.filter((entry) => entry.will_attend);
   const declined = rows.filter((entry) => !entry.will_attend);
+  const confirmedPeople = confirmed.reduce(
+    (acc, entry) => acc + normalizePeople(entry.attendees),
+    0,
+  );
+  const declinedPeople = declined.reduce(
+    (acc, entry) => acc + normalizePeople(entry.attendees),
+    0,
+  );
 
-  const confirmedLines = confirmed.map((entry) =>
-    `✅ ${formatConfirmationLine(entry)}`,
-  );
-  const declinedLines = declined.map((entry) =>
-    `❌ ${formatConfirmationLine(entry)}`,
-  );
+  const confirmedLines = confirmed.map((entry) => formatConfirmationLine(entry));
+  const declinedLines = declined.map((entry) => formatConfirmationLine(entry));
 
   const content = [];
 
   if (confirmedLines.length) {
-    content.push(`*Presentes* (${confirmedLines.length})`);
+    content.push(`*Presentes* (${confirmedPeople} pessoa${confirmedPeople === 1 ? "" : "s"})`);
     content.push(...confirmedLines);
   }
 
@@ -172,7 +207,9 @@ function buildListText(rows) {
     if (content.length) {
       content.push("");
     }
-    content.push(`*Não comparecerão* (${declinedLines.length})`);
+    content.push(
+      `*Não comparecerão* (${declinedPeople} pessoa${declinedPeople === 1 ? "" : "s"})`,
+    );
     content.push(...declinedLines);
   }
 
@@ -184,8 +221,7 @@ function countTotals(rows) {
     if (!entry.will_attend) {
       return acc;
     }
-
-    const people = Number(entry.attendees || 0);
+    const people = normalizePeople(entry.attendees);
     if (entry.moment === "igreja" || entry.moment === "ambos") {
       return acc + people;
     }
@@ -196,16 +232,19 @@ function countTotals(rows) {
     if (!entry.will_attend) {
       return acc;
     }
-
-    const people = Number(entry.attendees || 0);
+    const people = normalizePeople(entry.attendees);
     if (entry.moment === "restaurante" || entry.moment === "ambos") {
       return acc + people;
     }
     return acc;
   }, 0);
 
-  const yes = rows.filter((entry) => entry.will_attend).length;
-  const no = rows.length - yes;
+  const yes = rows
+    .filter((entry) => entry.will_attend)
+    .reduce((acc, entry) => acc + normalizePeople(entry.attendees), 0);
+  const no = rows
+    .filter((entry) => !entry.will_attend)
+    .reduce((acc, entry) => acc + normalizePeople(entry.attendees), 0);
 
   return {
     yes,
@@ -222,10 +261,10 @@ function buildBlocksForPayload(payload, rows) {
 
   const summaryText = [
     `*Respostas:* ${totals.total}`,
-    `*Presentes:* ${totals.yes}`,
-    `*Não comparecerão:* ${totals.no}`,
-    `*Total igreja:* ${totals.peopleAtChurch} pessoa${totals.peopleAtChurch === 1 ? "" : "s"}`,
-    `*Total restaurante:* ${totals.peopleAtRestaurant} pessoa${totals.peopleAtRestaurant === 1 ? "" : "s"}`,
+    `*Presentes:* ${formatPeopleCount(totals.yes)}`,
+    `*Não comparecerão:* ${formatPeopleCount(totals.no)}`,
+    `*Total igreja:* ${formatPeopleCount(totals.peopleAtChurch)}`,
+    `*Total restaurante:* ${formatPeopleCount(totals.peopleAtRestaurant)}`,
     `*Restaurante:* ${RESTAURANT_NAME} (${RESTAURANT_TIME})`,
     `*Igreja:* ${CHURCH_NAME} (${CHURCH_TIME})`,
   ].join("\n");
@@ -251,7 +290,7 @@ function buildBlocksForPayload(payload, rows) {
           `*Status:* ${statusText}`,
           `*Momentos:* ${selectedMomentLabel}`,
           `*Participantes:* ${peopleCount}`,
-          `*Horário:* ${payload.createdAtText || "-"}`,
+          `*Horário:* ${createdAtText || "-"}`,
         ].join("\n"),
       },
     },
@@ -284,7 +323,7 @@ function buildBlocksForPayload(payload, rows) {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: index === 0 ? `*Lista atualizada completa*\n${chunk}` : chunk,
+        text: index === 0 ? `*Lista atualizada completa*\n\n${chunk}` : chunk,
       },
     });
   });
@@ -351,91 +390,14 @@ async function sendWithWebhook(payload) {
   return { success: true };
 }
 
-function isSupabaseConfigured() {
-  return Boolean(supabaseUrl && supabaseServiceKey);
-}
-
-function supabaseBaseUrl() {
-  return `${String(supabaseUrl).replace(/\/$/, "")}/rest/v1`;
-}
-
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceKey,
-    Authorization: `Bearer ${supabaseServiceKey}`,
-    "Content-Type": "application/json; charset=utf-8",
-  };
-}
-
-async function saveConfirmation(row) {
-  if (!isSupabaseConfigured()) {
-    return { success: false, reason: "missing_storage_credentials" };
-  }
-
-  const response = await fetch(`${supabaseBaseUrl()}/${supabaseTable}`, {
-    method: "POST",
-    headers: {
-      ...supabaseHeaders(),
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify([row]),
-  });
-
-  const data = await response.json().catch(() => []);
-  if (!response.ok) {
-    return {
-      success: false,
-      reason: data?.message || data?.error || "Erro ao salvar no Supabase",
-      details: data,
-    };
-  }
-
-  return { success: true, data };
-}
-
-async function getAllConfirmations() {
-  if (!isSupabaseConfigured()) {
-    return { success: false, reason: "missing_storage_credentials" };
-  }
-
-  const select = [
-    "id",
-    "name",
-    "will_attend",
-    "moment",
-    "attendees",
-    "companions",
-    "note",
-    "created_at",
-  ].join(",");
-
-  const response = await fetch(
-    `${supabaseBaseUrl()}/${supabaseTable}?select=${select}&order=created_at.asc`,
-    {
-      method: "GET",
-      headers: supabaseHeaders(),
-    },
-  );
-
-  const data = await response.json().catch(() => []);
-  if (!response.ok) {
-    return {
-      success: false,
-      reason: data?.message || data?.error || "Erro ao consultar confirmações",
-      details: data,
-    };
-  }
-
-  return {
-    success: true,
-    data: Array.isArray(data) ? data : [],
-  };
+function isMongoConfigured() {
+  return Boolean(mongodbUri);
 }
 
 function normalizePayload(raw) {
   const name = sanitizeText(raw.name);
-  const willAttend = raw.willAttend === "sim";
-  const people = willAttend ? sanitizeInt(raw.attendees) : 0;
+  const willAttend = parseWillAttend(raw.willAttend);
+  const attendees = willAttend ? sanitizeInt(raw.attendees) : 1;
   const moment = willAttend ? normalizeMoment(raw.attendanceMode || raw.moment || "") : "";
   const companions = sanitizeText(raw.companions);
   const note = sanitizeText(raw.note);
@@ -443,7 +405,7 @@ function normalizePayload(raw) {
   return {
     name,
     willAttend,
-    people,
+    attendees,
     moment,
     companions,
     note,
@@ -460,28 +422,93 @@ function normalizePayload(raw) {
 
 function buildMessageBlocks(entry, allEntries) {
   const statusText = entry.willAttend
-    ? "✅ Confirmou presença"
-    : "❌ Não poderá comparecer";
-  const selectedMomentLabel = entry.willAttend
-    ? buildListForMoment(entry.moment)
-    : "-";
+    ? "Confirmou presença"
+    : "Não poderá comparecer";
+  const selectedMomentLabel = entry.willAttend ? buildListForMoment(entry.moment) : "-";
+  const peopleCount = normalizePeople(entry.attendees);
 
-  const payload = {
-    text: `${statusText} - ${entry.name}`,
+  return {
+    text: "Nova confirmação - Batizado da Maria Cecilia",
     blocks: buildBlocksForPayload(
       {
         name: entry.name,
         statusText,
         selectedMomentLabel,
-        peopleCount: `${entry.people} pessoa${entry.people === 1 ? "" : "s"}`,
+        peopleCount: formatPeopleCount(peopleCount),
         note: entry.note,
         createdAtText: entry.createdAtText,
       },
       allEntries,
     ),
   };
+}
 
-  return payload;
+async function getCollection() {
+  if (!isMongoConfigured()) {
+    return { success: false, reason: "missing_storage_credentials" };
+  }
+
+  try {
+    if (!mongoCache.client) {
+      mongoCache.client = new MongoClient(mongodbUri, {
+        maxPoolSize: 4,
+        minPoolSize: 0,
+      });
+      await mongoCache.client.connect();
+      mongoCache.db = mongoCache.client.db(mongodbDbName);
+    }
+
+    return {
+      success: true,
+      collection: mongoCache.db.collection(mongodbCollection),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      reason: error instanceof Error ? error.message : "Erro ao conectar no MongoDB",
+    };
+  }
+}
+
+async function saveConfirmation(row) {
+  const collectionResult = await getCollection();
+  if (!collectionResult.success) {
+    return collectionResult;
+  }
+
+  try {
+    const insertResult = await collectionResult.collection.insertOne(row);
+    return { success: true, id: insertResult.insertedId };
+  } catch (error) {
+    return {
+      success: false,
+      reason: error instanceof Error ? error.message : "Erro ao salvar no MongoDB",
+    };
+  }
+}
+
+async function getAllConfirmations() {
+  const collectionResult = await getCollection();
+  if (!collectionResult.success) {
+    return collectionResult;
+  }
+
+  try {
+    const data = await collectionResult.collection
+      .find({}, { projection: { _id: 0 } })
+      .sort({ created_at: 1 })
+      .toArray();
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      reason: error instanceof Error ? error.message : "Erro ao consultar confirmações",
+    };
+  }
 }
 
 export default async function handler(req, res) {
@@ -511,12 +538,12 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!isSupabaseConfigured()) {
+    if (!isMongoConfigured()) {
       return res.status(202).json({
         success: false,
         disabled: true,
         message:
-          "Confirmação recebida, mas a integração de armazenamento não está configurada (Supabase).",
+          "Confirmação recebida, mas a integração de armazenamento não está configurada (MongoDB).",
       });
     }
 
@@ -524,10 +551,10 @@ export default async function handler(req, res) {
       name: data.name,
       will_attend: isAttending,
       moment: isAttending ? data.moment : null,
-      attendees: data.people,
+      attendees: data.attendees,
       companions: data.companions || null,
       note: data.note || null,
-      created_at: new Date().toISOString(),
+      created_at: new Date(),
     });
 
     if (!saved.success) {
@@ -550,7 +577,7 @@ export default async function handler(req, res) {
       {
         name: data.name,
         willAttend: isAttending,
-        people: data.people,
+        attendees: data.attendees,
         moment: data.moment,
         note: data.note,
         createdAtText: data.createdAtText,
@@ -558,10 +585,7 @@ export default async function handler(req, res) {
       allEntries,
     );
 
-    const slackResult = await sendToSlack({
-      ...slackPayload,
-      text: `${isAttending ? "✅" : "❌"} ${data.name}`,
-    });
+    const slackResult = await sendToSlack(slackPayload);
 
     if (!slackResult.success) {
       if (slackResult.reason === "missing_slack_credentials") {
@@ -573,7 +597,9 @@ export default async function handler(req, res) {
         });
       }
 
-      return res.status(502).json({ error: slackResult.reason || "Erro ao enviar para o Slack." });
+      return res
+        .status(502)
+        .json({ error: slackResult.reason || "Erro ao enviar para o Slack." });
     }
 
     return res.status(200).json({

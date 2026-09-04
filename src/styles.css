@@ -1839,6 +1839,18 @@ a {
   font-weight: 500;
 }
 
+/* Rubi (a york da familia) — svg inline ao lado do nome dela na assinatura */
+.rubi-mark {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: -8px;
+  margin: 0 4px;
+  opacity: 0.9;
+}
+.rubi-mark svg {
+  display: block;
+}
+
 .footer-meta {
   font-size: 11px;
   font-weight: 600;

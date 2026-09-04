@@ -185,6 +185,18 @@ window.addEventListener('scroll', updateScrollProgress, { passive: true });
 updateScrollProgress();
 
 /* =============================================================
+   5b. SCROLL CUE — hide after first viewport of scroll
+   ============================================================= */
+const scrollCue = document.querySelector('.scroll-cue');
+const updateScrollCue = () => {
+  if (!scrollCue) return;
+  const threshold = window.innerHeight * 0.1;
+  scrollCue.classList.toggle('is-hidden', window.scrollY > threshold);
+};
+window.addEventListener('scroll', updateScrollCue, { passive: true });
+updateScrollCue();
+
+/* =============================================================
    5. SMOOTH SCROLL WITH OFFSET (for topbar anchor links)
    ============================================================= */
 const topbarOffset = 90;

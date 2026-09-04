@@ -1131,6 +1131,7 @@ a {
   box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
+  overflow-anchor: none;
 }
 
 .rsvp-inner::before {

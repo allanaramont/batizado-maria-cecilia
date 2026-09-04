@@ -601,7 +601,23 @@ const setDuplicateFeedback = (duplicateNames) => {
   renderCompanions();
 };
 
+const restoreRsvpPosition = (previousTop) => {
+  if (typeof previousTop !== 'number' || !window.matchMedia('(max-width: 720px)').matches) return;
+
+  const restore = () => {
+    if (!rsvpInner) return;
+    const topDelta = rsvpInner.getBoundingClientRect().top - previousTop;
+    if (Math.abs(topDelta) > 1) window.scrollBy({ top: topDelta, behavior: 'auto' });
+  };
+
+  window.requestAnimationFrame(() => {
+    restore();
+    window.requestAnimationFrame(restore);
+  });
+};
+
 const showSubmissionFailure = (message, duplicateNames = []) => {
+  const rsvpTop = rsvpInner?.getBoundingClientRect().top;
   form.hidden = false;
   if (successWrap) successWrap.hidden = true;
   if (rsvpInner) rsvpInner.classList.remove('is-success');
@@ -610,6 +626,7 @@ const showSubmissionFailure = (message, duplicateNames = []) => {
   errorMessage.textContent = message;
   setDuplicateFeedback(duplicateNames);
   showToast(message);
+  restoreRsvpPosition(rsvpTop);
 };
 
 const MOMENT_LABEL = {
@@ -620,6 +637,7 @@ const MOMENT_LABEL = {
 
 const showPanel = (n) => {
   if (!wizard) return;
+  const rsvpTop = rsvpInner?.getBoundingClientRect().top;
   state.step = n;
   wizard.dataset.step = String(n);
   wizard.querySelectorAll('.wizard-panel').forEach((p) => {
@@ -636,6 +654,7 @@ const showPanel = (n) => {
     item.classList.toggle('is-active', pn <= n);
   });
   errorMessage.textContent = '';
+  restoreRsvpPosition(rsvpTop);
 };
 
 const setAttendees = (v) => {
@@ -711,6 +730,7 @@ const setCompanionMode = (mode) => {
 
 document.querySelectorAll('[data-companion-mode]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     const mode = btn.dataset.companionMode;
     // toggle off if clicking the active one
     if (state.companionMode === mode) {
@@ -784,6 +804,7 @@ const resetWizard = () => {
 // choice buttons (presence)
 document.querySelectorAll('[data-choice]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     state.attendanceChoice = btn.dataset.choice;
     document.querySelectorAll('[data-choice]').forEach((b) =>
       b.classList.toggle('is-active', b === btn)
@@ -795,6 +816,7 @@ document.querySelectorAll('[data-choice]').forEach((btn) => {
 // moment buttons
 document.querySelectorAll('[data-moment]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     state.attendanceMoment = btn.dataset.moment;
     document.querySelectorAll('[data-moment]').forEach((b) =>
       b.classList.toggle('is-active', b === btn)
@@ -805,6 +827,7 @@ document.querySelectorAll('[data-moment]').forEach((btn) => {
 // next / back
 document.querySelectorAll('[data-next]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     errorMessage.textContent = '';
     if (state.step === 2) {
       const nameError = validateName();
@@ -833,6 +856,7 @@ document.querySelectorAll('[data-next]').forEach((btn) => {
 
 document.querySelectorAll('[data-back]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     if (state.step > 1) {
       if (state.step === 4 && state.attendanceChoice === 'nao') {
         showPanel(2);
@@ -889,7 +913,10 @@ const submitConfirmation = async (e) => {
   const submitBtn = form.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.disabled = true;
+    submitBtn.blur();
   }
+
+  const rsvpTop = rsvpInner?.getBoundingClientRect().top;
 
   // Esconde o form e mostra o card de loading imediatamente.
   // O loading fica em loop ate a API responder, ai mostra o card final.
@@ -898,6 +925,7 @@ const submitConfirmation = async (e) => {
   if (rsvpInner) rsvpInner.classList.add('is-success');
   if (wizardLoading) wizardLoading.hidden = false;
   if (successFinal) successFinal.hidden = true;
+  restoreRsvpPosition(rsvpTop);
 
   // Cria um Promise que sinaliza quando o submit termina (sucesso ou erro).
   // O carrossel usa esse sinal, mas só para depois do primeiro ciclo completo.
@@ -945,6 +973,7 @@ const submitConfirmation = async (e) => {
     // Esconde o loading e mostra o card final com foto + check
     if (wizardLoading) wizardLoading.hidden = true;
     if (successFinal) successFinal.hidden = false;
+    restoreRsvpPosition(rsvpTop);
   } catch {
     stopResolve();
     await loadingPromise;

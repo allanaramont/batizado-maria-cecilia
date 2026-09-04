@@ -337,10 +337,11 @@ a {
 .topbar {
   position: fixed;
   top: 18px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-10px);
+  left: 0;
+  right: 0;
   z-index: 80;
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 18px;
   padding: 10px 14px 10px 18px;
@@ -350,7 +351,11 @@ a {
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   box-shadow: var(--shadow-soft);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0 auto;
   opacity: 0;
+  transform: translateY(-10px);
   transition:
     opacity 0.6s var(--ease-out),
     transform 0.6s var(--ease-out);
@@ -358,7 +363,7 @@ a {
 
 .topbar.is-visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
 .brand {
@@ -488,7 +493,8 @@ a {
 }
 
 .btn-magnetic.btn-primary {
-  background: transparent;
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .btn-magnetic.btn-primary .btn-bg {
@@ -497,19 +503,21 @@ a {
 
 .btn-magnetic.btn-ghost {
   background: transparent;
-  box-shadow: inset 0 0 0 1px var(--surface-line-strong);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
 }
 
 .btn-magnetic.btn-ghost .btn-bg {
   background: var(--ink);
 }
 
-.btn-magnetic:hover {
-  color: var(--bg);
+.btn-magnetic.btn-primary:hover {
+  background: var(--rose-deep);
 }
 
 .btn-magnetic.btn-ghost:hover {
-  box-shadow: inset 0 0 0 1px var(--ink);
+  color: var(--bg);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
 }
 
 .btn-magnetic:hover .btn-bg {
@@ -557,8 +565,8 @@ a {
     color 0.3s var(--ease-out),
     border-color 0.3s var(--ease-out),
     transform 0.3s var(--ease-out);
-  border: 1px solid var(--surface-line-strong);
-  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  background: transparent;
 }
 
 .btn-mini.btn-primary {
@@ -594,23 +602,21 @@ a {
 
 .hero-ornament {
   position: absolute;
-  width: clamp(280px, 50vw, 520px);
+  width: clamp(320px, 50vw, 620px);
   aspect-ratio: 1;
-  top: 50%;
+  top: 44%;
   left: 50%;
   transform: translate(-50%, -50%);
-  opacity: 0.7;
-  animation: spin 60s linear infinite;
+  opacity: 0.95;
+  animation: float 8s ease-in-out infinite;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
-  border-radius: 50%;
+  overflow: visible;
 }
 
-@keyframes spin {
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
+@keyframes float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-12px); }
 }
 
 .hero .eyebrow,
@@ -711,8 +717,10 @@ a {
 .scroll-cue {
   position: absolute;
   bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: max-content;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -1259,7 +1267,7 @@ a {
 
 .btn-magnetic.is-active {
   color: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
 }
 
 .btn-magnetic.is-active .btn-bg {

@@ -176,11 +176,11 @@ async function typeInto(el, text, speed = 55) {
 async function runTypewriter() {
   if (hero) hero.classList.add('is-typing');
   await sleep(450); // brief pause before starting
-  await typeInto(typeEyebrow, 'Você é nosso convidado especial', 55);
-  await sleep(380);
   await typeInto(typeName1, 'Maria', 130);
   await sleep(180);
   await typeInto(typeName2, 'Cecilia', 130);
+  await sleep(380);
+  await typeInto(typeEyebrow, 'Você é nosso convidado especial', 55);
   await sleep(420);
   // reveal the rest of the hero
   [heroMeta, heroSub, heroCta, scrollCue].forEach((el) => {

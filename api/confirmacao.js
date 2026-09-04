@@ -212,7 +212,7 @@ function buildListText(rows) {
   const content = [];
 
   if (confirmedLines.length) {
-    content.push(`*Presentes* (${confirmedPeople} pessoa${confirmedPeople === 1 ? "" : "s"})`);
+    content.push(`*Pessoas confirmadas* (${confirmedPeople} pessoa${confirmedPeople === 1 ? "" : "s"})`);
     content.push(...confirmedLines);
   }
 
@@ -273,13 +273,9 @@ function buildBlocksForPayload(payload, rows) {
   const totals = countTotals(rows);
 
   const summaryText = [
-    `*Respostas:* ${totals.total}`,
-    `*Presentes:* ${formatPeopleCount(totals.yes)}`,
+    `*Total de respostas:* ${totals.total}`,
+    `*Total de pessoas confirmadas:* ${formatPeopleCount(totals.yes)}`,
     `*Não comparecerão:* ${formatPeopleCount(totals.no)}`,
-    `*Total igreja:* ${formatPeopleCount(totals.peopleAtChurch)}`,
-    `*Total restaurante:* ${formatPeopleCount(totals.peopleAtRestaurant)}`,
-    `*Restaurante:* ${RESTAURANT_NAME} (${RESTAURANT_TIME})`,
-    `*Igreja:* ${CHURCH_NAME} (${CHURCH_TIME})`,
   ].join("\n");
 
   const rowsText = buildListText(rows);

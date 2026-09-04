@@ -67,10 +67,11 @@ test("usa a quantidade corrigida nos totais e na lista do Slack", () => {
     .map((block) => block.text?.text || "")
     .join("\n");
 
+  assert.match(slackText, /\*Total de respostas:\* 2/);
+  assert.match(slackText, /\*Total de pessoas confirmadas:\* 5 pessoas/);
+  assert.doesNotMatch(slackText, /\*Restaurante:\*/);
+  assert.doesNotMatch(slackText, /\*Igreja:\*/);
   assert.match(slackText, /\*Participantes:\* 2 pessoas/);
-  assert.match(slackText, /\*Presentes\* \(5 pessoas\)/);
-  assert.match(slackText, /\*Total igreja:\* 5 pessoas/);
-  assert.match(slackText, /\*Total restaurante:\* 5 pessoas/);
   assert.match(slackText, /• \*Nathelly Monteiro\* \+ Allan Monteiro • 2 pessoas • Igreja \+ Restaurante/);
 });
 
@@ -98,6 +99,6 @@ test("corrige a contagem de registros antigos com acompanhantes nomeados", () =>
     .map((block) => block.text?.text || "")
     .join("\n");
 
-  assert.match(slackText, /\*Presentes\* \(2 pessoas\)/);
+  assert.match(slackText, /\*Pessoas confirmadas\* \(2 pessoas\)/);
   assert.match(slackText, /• \*Nathelly Monteiro\* \+ Allan Monteiro • 2 pessoas • Igreja \+ Restaurante/);
 });

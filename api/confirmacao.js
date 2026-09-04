@@ -102,12 +102,15 @@ function formatPeopleCount(value) {
   return `${value} pessoa${value === 1 ? "" : "s"}`;
 }
 
-function normalizePeople(value) {
-  const parsed = Number.parseInt(value, 10);
-  if (Number.isNaN(parsed) || parsed < 1) {
-    return 1;
+function getCompanionNames(value) {
+  if (typeof value !== "string") {
+    return [];
   }
-  return parsed;
+
+  return value
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
 }
 
 function chunkText(rawText, chunkLength = 2800) {
@@ -143,12 +146,20 @@ function chunkText(rawText, chunkLength = 2800) {
   return parts;
 }
 
-function sanitizeInt(value) {
-  const parsed = Number.parseInt(value, 10);
-  if (Number.isNaN(parsed)) {
-    return 1;
-  }
-  return Math.max(1, parsed);
+function countNamedCompanions(value) {
+  return getCompanionNames(value).length;
+}
+
+function normalizeAttendees(rawValue, companions) {
+  const parsed = Number.parseInt(rawValue, 10);
+  const storedPeople = !Number.isNaN(parsed) && parsed > 0 ? parsed : 1;
+  const namedPeople = countNamedCompanions(companions) + 1;
+
+  return Math.max(storedPeople, namedPeople);
+}
+
+function getEntryPeopleCount(entry) {
+  return normalizeAttendees(entry.attendees, entry.companions);
 }
 
 function parseWillAttend(value) {
@@ -174,22 +185,24 @@ function parseWillAttend(value) {
 }
 
 function formatConfirmationLine(item) {
-  const people = normalizePeople(item.attendees);
+  const people = getEntryPeopleCount(item);
   const attendeesText = formatPeopleCount(people);
   const momentText = item.will_attend ? buildListForMoment(item.moment || "") : "-";
+  const companionNames = getCompanionNames(item.companions);
+  const namesText = companionNames.length ? ` + ${companionNames.join(", ")}` : "";
 
-  return `• *${item.name}* • ${attendeesText} • ${momentText}`;
+  return `• *${item.name}*${namesText} • ${attendeesText} • ${momentText}`;
 }
 
 function buildListText(rows) {
   const confirmed = rows.filter((entry) => entry.will_attend);
   const declined = rows.filter((entry) => !entry.will_attend);
   const confirmedPeople = confirmed.reduce(
-    (acc, entry) => acc + normalizePeople(entry.attendees),
+    (acc, entry) => acc + getEntryPeopleCount(entry),
     0,
   );
   const declinedPeople = declined.reduce(
-    (acc, entry) => acc + normalizePeople(entry.attendees),
+    (acc, entry) => acc + getEntryPeopleCount(entry),
     0,
   );
 
@@ -221,7 +234,7 @@ function countTotals(rows) {
     if (!entry.will_attend) {
       return acc;
     }
-    const people = normalizePeople(entry.attendees);
+    const people = getEntryPeopleCount(entry);
     if (entry.moment === "igreja" || entry.moment === "ambos") {
       return acc + people;
     }
@@ -232,7 +245,7 @@ function countTotals(rows) {
     if (!entry.will_attend) {
       return acc;
     }
-    const people = normalizePeople(entry.attendees);
+    const people = getEntryPeopleCount(entry);
     if (entry.moment === "restaurante" || entry.moment === "ambos") {
       return acc + people;
     }
@@ -241,10 +254,10 @@ function countTotals(rows) {
 
   const yes = rows
     .filter((entry) => entry.will_attend)
-    .reduce((acc, entry) => acc + normalizePeople(entry.attendees), 0);
+    .reduce((acc, entry) => acc + getEntryPeopleCount(entry), 0);
   const no = rows
     .filter((entry) => !entry.will_attend)
-    .reduce((acc, entry) => acc + normalizePeople(entry.attendees), 0);
+    .reduce((acc, entry) => acc + getEntryPeopleCount(entry), 0);
 
   return {
     yes,
@@ -397,9 +410,9 @@ function isMongoConfigured() {
 function normalizePayload(raw) {
   const name = sanitizeText(raw.name);
   const willAttend = parseWillAttend(raw.willAttend);
-  const attendees = willAttend ? sanitizeInt(raw.attendees) : 1;
   const moment = willAttend ? normalizeMoment(raw.attendanceMode || raw.moment || "") : "";
   const companions = sanitizeText(raw.companions);
+  const attendees = willAttend ? normalizeAttendees(raw.attendees, companions) : 1;
   const note = sanitizeText(raw.note);
 
   return {
@@ -425,7 +438,7 @@ function buildMessageBlocks(entry, allEntries) {
     ? "Confirmou presença"
     : "Não poderá comparecer";
   const selectedMomentLabel = entry.willAttend ? buildListForMoment(entry.moment) : "-";
-  const peopleCount = normalizePeople(entry.attendees);
+  const peopleCount = getEntryPeopleCount(entry);
 
   return {
     text: "Nova confirmação - Batizado da Maria Cecilia",
@@ -510,6 +523,8 @@ async function getAllConfirmations() {
     };
   }
 }
+
+export { buildMessageBlocks, normalizePayload };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

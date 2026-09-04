@@ -1176,56 +1176,6 @@ a {
   background: linear-gradient(90deg, transparent, rgba(212, 133, 154, 0.4), transparent);
 }
 
-.wizard-progress {
-  list-style: none;
-  margin: 0 0 40px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-mute);
-  letter-spacing: 0.04em;
-}
-
-.wp-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 8px;
-  border-radius: 999px;
-  background: rgba(92, 56, 69, 0.04);
-  transition: background 0.3s var(--ease-out), color 0.3s var(--ease-out);
-}
-
-.wp-item span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(92, 56, 69, 0.08);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-soft);
-  font-family: var(--font-display);
-  font-feature-settings: "tnum";
-  transition: background 0.3s var(--ease-out), color 0.3s var(--ease-out);
-}
-
-.wp-item.is-active {
-  background: var(--ink);
-  color: var(--bg);
-}
-
-.wp-item.is-active span {
-  background: var(--rose);
-  color: var(--bg);
-}
-
 .wizard-panel {
   animation: panel-in 0.55s var(--ease-out);
 }

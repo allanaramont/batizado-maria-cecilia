@@ -1227,8 +1227,13 @@ a {
 
 .choice-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.choice-row .btn-magnetic {
+  width: 100%;
+  justify-content: center;
 }
 
 .moment-stack {

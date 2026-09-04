@@ -350,6 +350,7 @@ const loadingIllustration = document.getElementById('loadingIllustration');
 const loadingStepTitle = document.getElementById('loadingStepTitle');
 const loadingStepDesc = document.getElementById('loadingStepDesc');
 const loadingDots = document.getElementById('loadingDots');
+const loadingHint = document.getElementById('loadingHint');
 const toast = document.getElementById('toast');
 const LOADING_STEP_DURATION_MS = 2000;
 
@@ -374,6 +375,18 @@ const LOADING_STEP_DEFINITIONS = {
   family: {
     getTitle: () => 'A família tá emocionada',
     getDescription: () => 'Allan, Nathelly e a Rubi já tão sabendo',
+  },
+  decline: {
+    getTitle: ({ firstName }) => (firstName ? `Que pena, ${firstName}` : 'Que pena'),
+    getDescription: () => 'Vamos sentir sua falta nesse dia',
+  },
+  declineFamily: {
+    getTitle: () => 'A família vai sentir sua falta',
+    getDescription: () => 'Mas agradece por você ter avisado',
+  },
+  declineCare: {
+    getTitle: () => 'Seu carinho estará presente',
+    getDescription: () => 'Mesmo de longe, você estará em nossos pensamentos',
   },
 };
 
@@ -420,12 +433,15 @@ const runLoadingAnimation = async (payload, stopPromise) => {
       stepKeys.push('restaurant');
     }
     stepKeys.push('notify');
+    stepKeys.push('family');
+  } else {
+    stepKeys.push('decline', 'declineFamily', 'declineCare');
   }
-  stepKeys.push('family');
 
   // pluralizacao baseada na quantidade ou nos nomes informados
   const peopleCount = getPeopleCount(payload);
   const isPlural = peopleCount > 1;
+  const firstName = getFirstName(payload.name);
 
   // monta dots conforme a quantidade de etapas
   if (loadingDots) {
@@ -443,6 +459,12 @@ const runLoadingAnimation = async (payload, stopPromise) => {
   // estado: mostra o loading, esconde o final
   if (wizardLoading) wizardLoading.hidden = false;
   if (successFinal) successFinal.hidden = true;
+  if (loadingHint) {
+    loadingHint.textContent =
+      payload.willAttend === 'sim'
+        ? 'A confirmação está sendo enviada com segurança'
+        : 'Registrando seu carinho com todo cuidado';
+  }
 
   // loop principal: se a API responder cedo, termina o primeiro ciclo antes
   // de revelar o sucesso; se demorar, continua ciclando ate ela responder.
@@ -460,8 +482,8 @@ const runLoadingAnimation = async (payload, stopPromise) => {
     const definition = LOADING_STEP_DEFINITIONS[key];
     const def = definition
       ? {
-          title: definition.getTitle({ isPlural, peopleCount }),
-          desc: definition.getDescription({ isPlural, peopleCount }),
+          title: definition.getTitle({ isPlural, peopleCount, firstName }),
+          desc: definition.getDescription({ isPlural, peopleCount, firstName }),
         }
       : null;
     if (!def) return;

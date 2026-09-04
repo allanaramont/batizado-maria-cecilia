@@ -702,12 +702,7 @@ document.querySelectorAll('[data-choice]').forEach((btn) => {
     document.querySelectorAll('[data-choice]').forEach((b) =>
       b.classList.toggle('is-active', b === btn)
     );
-    if (state.attendanceChoice === 'nao') {
-      showPanel(4);
-      fillReview();
-    } else {
-      showPanel(2);
-    }
+    showPanel(2);
   });
 });
 
@@ -732,6 +727,11 @@ document.querySelectorAll('[data-next]').forEach((btn) => {
         nameInput.focus();
         return;
       }
+      if (state.attendanceChoice === 'nao') {
+        fillReview();
+        showPanel(4);
+        return;
+      }
     } else if (state.step === 3) {
       if (state.attendanceChoice === 'sim' && !state.attendanceMoment) {
         errorMessage.textContent = 'Selecione de quais momentos você participará.';
@@ -749,7 +749,7 @@ document.querySelectorAll('[data-back]').forEach((btn) => {
   btn.addEventListener('click', () => {
     if (state.step > 1) {
       if (state.step === 4 && state.attendanceChoice === 'nao') {
-        showPanel(1);
+        showPanel(2);
       } else {
         showPanel(state.step - 1);
       }

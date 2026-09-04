@@ -557,6 +557,9 @@ const normalizeNameForFeedback = (raw) =>
     .replace(/\s+/g, ' ')
     .toUpperCase();
 
+const formatNameForDisplay = (raw) =>
+  (raw || '').trim().replace(/\s+/g, ' ').toLocaleUpperCase('pt-BR');
+
 const DUPLICATE_NAME_HINT = 'Esta pessoa já possui uma confirmação.';
 const DEFAULT_NAME_HINT = 'Informe nome e sobrenome para sabermos quem é você.';
 
@@ -810,9 +813,11 @@ const buildAttendeesText = () => {
     return `${state.attendees} ${state.attendees === 1 ? 'pessoa' : 'pessoas'}`;
   }
   if (state.companionMode === 'names') {
-    const list = state.companionNames.map((n) => n.trim()).filter(Boolean);
-    if (!list.length) return 'Só você';
-    return ['Você', ...list].join(', ');
+    const list = state.companionNames
+      .map((n) => formatNameForDisplay(n))
+      .filter(Boolean);
+    if (!list.length) return 'SÓ VOCÊ';
+    return ['VOCÊ', ...list].join(', ');
   }
   return 'Só você';
 };
@@ -824,7 +829,7 @@ const buildCompanionsString = () => {
 
 const fillReview = () => {
   const map = {
-    name: nameInput.value.trim() || '—',
+    name: formatNameForDisplay(nameInput.value) || '—',
     attendees: buildAttendeesText(),
     moment: state.attendanceChoice === 'nao' ? '—' : (MOMENT_LABEL[state.attendanceMoment] || '—'),
   };

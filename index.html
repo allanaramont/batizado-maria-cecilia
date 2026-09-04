@@ -345,7 +345,8 @@
             <form id="confirmationForm" class="wizard-form" novalidate>
               <!-- step 2: dados -->
               <div class="wizard-panel" data-panel="2" hidden>
-                <p class="wizard-question">Conte-nos sobre você</p>
+                <p class="wizard-question" id="detailsQuestion">Conte-nos sobre você</p>
+                <p class="wizard-decline-message" id="declineMessage" hidden></p>
                 <div class="field">
                   <label for="name">Nome completo</label>
                   <input
@@ -360,8 +361,9 @@
                   <span class="field-hint" id="nameHint">Informe nome e sobrenome para sabermos quem é você.</span>
                 </div>
 
-                <div class="field">
-                  <span class="field-label">Como você quer registrar quem vem com você? <em>(opcional)</em></span>
+                <div id="companionFields">
+                  <div class="field">
+                    <span class="field-label">Como você quer registrar quem vem com você? <em>(opcional)</em></span>
                   <div class="companion-toggle">
                     <button
                       class="btn-magnetic btn-ghost"
@@ -390,34 +392,35 @@
                       </span>
                     </button>
                   </div>
-                </div>
+                  </div>
 
-                <div class="companion-area" data-companion-area="count" hidden>
-                  <div class="field">
-                    <span class="field-label">Quantas pessoas, contando com você?</span>
-                    <div class="counter">
-                      <button id="decrease" type="button" aria-label="Diminuir">−</button>
-                      <input
-                        id="attendees"
-                        name="attendees"
-                        type="text"
-                        readonly
-                        value="1"
-                        aria-live="polite"
-                      />
-                      <button id="increase" type="button" aria-label="Aumentar">+</button>
+                  <div class="companion-area" data-companion-area="count" hidden>
+                    <div class="field">
+                      <span class="field-label">Quantas pessoas, contando com você?</span>
+                      <div class="counter">
+                        <button id="decrease" type="button" aria-label="Diminuir">−</button>
+                        <input
+                          id="attendees"
+                          name="attendees"
+                          type="text"
+                          readonly
+                          value="1"
+                          aria-live="polite"
+                        />
+                        <button id="increase" type="button" aria-label="Aumentar">+</button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="companion-area" data-companion-area="names" hidden>
-                  <div class="field">
-                    <span class="field-label">Quem mais vai com você?</span>
-                    <div class="companion-list" id="companionList"></div>
-                    <button class="btn-mini btn-ghost" type="button" id="addCompanion" data-cursor="hover">
-                      <span class="ic-plus" aria-hidden="true">+</span>
-                      <span>Adicionar acompanhante</span>
-                    </button>
+                  <div class="companion-area" data-companion-area="names" hidden>
+                    <div class="field">
+                      <span class="field-label">Quem mais vai com você?</span>
+                      <div class="companion-list" id="companionList"></div>
+                      <button class="btn-mini btn-ghost" type="button" id="addCompanion" data-cursor="hover">
+                        <span class="ic-plus" aria-hidden="true">+</span>
+                        <span>Adicionar acompanhante</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -428,7 +431,7 @@
                   <button class="btn-magnetic btn-primary" type="button" data-next data-cursor="hover">
                     <span class="btn-bg" aria-hidden="true"></span>
             <span class="btn-shine" aria-hidden="true"></span>
-                    <span class="btn-text">Continuar</span>
+                    <span class="btn-text" id="continueLabel">Continuar</span>
                   </button>
                 </div>
               </div>
@@ -492,14 +495,14 @@
 
               <!-- step 4: revisão + submit -->
               <div class="wizard-panel" data-panel="4" hidden>
-                <p class="wizard-question">Confirme os dados</p>
+                <p class="wizard-question" id="reviewQuestion">Confirme os dados</p>
                 <ul class="review" aria-live="polite">
                   <li><span class="r-label">Nome</span><span class="r-val" data-r="name">—</span></li>
-                  <li>
+                  <li data-decline-field>
                     <span class="r-label">Vai com você</span>
                     <span class="r-val" data-r="attendees">—</span>
                   </li>
-                  <li>
+                  <li data-decline-field>
                     <span class="r-label">Momentos</span>
                     <span class="r-val" data-r="moment">—</span>
                   </li>
@@ -512,7 +515,7 @@
                   <button class="btn-magnetic btn-primary" type="submit" data-cursor="hover">
                     <span class="btn-bg" aria-hidden="true"></span>
             <span class="btn-shine" aria-hidden="true"></span>
-                    <span class="btn-text" data-submit-label>Enviar confirmação</span>
+                    <span class="btn-text" id="submitLabel" data-submit-label>Enviar confirmação</span>
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="btn-icon">
                       <path
                         d="M5 12h14M13 5l7 7-7 7"

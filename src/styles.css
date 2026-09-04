@@ -1290,6 +1290,16 @@ a {
   font-variation-settings: "opsz" 96;
 }
 
+.wizard-decline-message {
+  max-width: 560px;
+  margin: -8px 0 24px;
+  color: var(--ink-soft);
+  font-family: var(--font-accent);
+  font-size: 19px;
+  font-style: italic;
+  line-height: 1.45;
+}
+
 .choice-row {
   display: flex;
   flex-direction: column;

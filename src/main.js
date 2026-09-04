@@ -10,9 +10,6 @@ const VISIT_API_ENDPOINT = '/api/track-visit';
 
 const EVENT_DATETIME = new Date('2026-09-19T12:00:00-03:00');
 
-const SUCCESS_MESSAGE_NAO =
-  'Obrigado pelo retorno. Nathelly e Allan vão receber seu carinho no dia.';
-
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
@@ -402,6 +399,13 @@ const buildSuccessMessage = (payload) => {
     : 'Que alegria ter você conosco! Será uma bênção compartilhar esse momento tão especial da vida da Maria Cecilia com você.';
 };
 
+const buildDeclineMessage = (payload) => {
+  const firstName = getFirstName(payload.name);
+  return firstName
+    ? `Que pena, ${firstName}! Vamos sentir sua falta nesse dia. Obrigado por nos avisar — seu carinho estará presente com a Maria Cecilia.`
+    : 'Que pena que você não poderá estar conosco. Obrigado por nos avisar — seu carinho estará presente com a Maria Cecilia.';
+};
+
 // roda o carrossel de loading em loop enquanto a API nao responde.
 // Quando a flag stop vira true, a animacao para e o card final aparece.
 let loadingLoopRunning = false;
@@ -507,6 +511,12 @@ const wpItems = document.querySelectorAll('.wp-item');
 
 const nameInput = document.getElementById('name');
 const nameHint = document.getElementById('nameHint');
+const detailsQuestion = document.getElementById('detailsQuestion');
+const declineMessage = document.getElementById('declineMessage');
+const companionFields = document.getElementById('companionFields');
+const continueLabel = document.getElementById('continueLabel');
+const reviewQuestion = document.getElementById('reviewQuestion');
+const submitLabel = document.getElementById('submitLabel');
 const attendeesInput = document.getElementById('attendees');
 const decreaseBtn = document.getElementById('decrease');
 const increaseBtn = document.getElementById('increase');
@@ -528,6 +538,16 @@ const normalizeNameForFeedback = (raw) =>
 const DUPLICATE_NAME_HINT = 'Esta pessoa já possui uma confirmação.';
 const DEFAULT_NAME_HINT = 'Informe nome e sobrenome para sabermos quem é você.';
 
+const getFirstName = (raw) => (raw || '').trim().split(/\s+/).filter(Boolean)[0] || '';
+
+const updateDeclineMessage = () => {
+  if (!declineMessage) return;
+  const firstName = getFirstName(nameInput?.value);
+  declineMessage.textContent = firstName
+    ? `Que pena, ${firstName}! Vamos sentir sua falta nesse dia, mas agradecemos por nos avisar.`
+    : 'Que pena que você não poderá estar conosco. Vamos sentir sua falta, mas agradecemos por nos avisar.';
+};
+
 // Validação do nome: retorna null se válido, ou a mensagem de erro
 const validateName = () => {
   const count = getNameWordCount(nameInput.value);
@@ -539,6 +559,7 @@ const validateName = () => {
 // Feedback visual em tempo real: borda do campo muda conforme a pessoa digita
 nameInput?.addEventListener('input', () => {
   clearDuplicateFeedback();
+  updateDeclineMessage();
   const count = getNameWordCount(nameInput.value);
   nameInput.classList.toggle('is-valid', count >= 2);
   nameInput.classList.toggle('is-invalid', count > 0 && count < 2);
@@ -599,6 +620,24 @@ const setDuplicateFeedback = (duplicateNames) => {
   }
 
   renderCompanions();
+};
+
+const setDeclineMode = (isDeclining) => {
+  wizard?.classList.toggle('is-declining', isDeclining);
+  if (detailsQuestion) {
+    detailsQuestion.textContent = isDeclining ? 'Que pena que você não poderá estar conosco' : 'Conte-nos sobre você';
+  }
+  if (declineMessage) {
+    declineMessage.hidden = !isDeclining;
+    if (isDeclining) updateDeclineMessage();
+  }
+  if (companionFields) companionFields.hidden = isDeclining;
+  if (continueLabel) continueLabel.textContent = isDeclining ? 'Registrar resposta' : 'Continuar';
+  if (reviewQuestion) reviewQuestion.textContent = isDeclining ? 'Só para confirmar' : 'Confirme os dados';
+  if (submitLabel) submitLabel.textContent = isDeclining ? 'Avisar a família' : 'Enviar confirmação';
+  document.querySelectorAll('[data-decline-field]').forEach((field) => {
+    field.hidden = isDeclining;
+  });
 };
 
 const restoreRsvpPosition = (previousTop) => {
@@ -782,6 +821,7 @@ const resetWizard = () => {
   state.duplicateNames = [];
   form.reset();
   clearDuplicateFeedback();
+  setDeclineMode(false);
   setAttendees(1);
   setCompanionMode(null);
   renderCompanions();
@@ -806,6 +846,7 @@ document.querySelectorAll('[data-choice]').forEach((btn) => {
   btn.addEventListener('click', () => {
     btn.blur();
     state.attendanceChoice = btn.dataset.choice;
+    setDeclineMode(state.attendanceChoice === 'nao');
     document.querySelectorAll('[data-choice]').forEach((b) =>
       b.classList.toggle('is-active', b === btn)
     );
@@ -969,7 +1010,7 @@ const submitConfirmation = async (e) => {
     }
 
     successMessage.textContent =
-      payload.willAttend === 'sim' ? buildSuccessMessage(payload) : SUCCESS_MESSAGE_NAO;
+      payload.willAttend === 'sim' ? buildSuccessMessage(payload) : buildDeclineMessage(payload);
     // Esconde o loading e mostra o card final com foto + check
     if (wizardLoading) wizardLoading.hidden = true;
     if (successFinal) successFinal.hidden = false;

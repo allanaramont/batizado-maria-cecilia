@@ -353,6 +353,7 @@ const loadingIllustration = document.getElementById('loadingIllustration');
 const loadingStepTitle = document.getElementById('loadingStepTitle');
 const loadingStepDesc = document.getElementById('loadingStepDesc');
 const loadingDots = document.getElementById('loadingDots');
+const LOADING_STEP_DURATION_MS = 3900;
 
 // textos de cada etapa (titulo + descricao)
 const LOADING_STEP_DEFINITIONS = {
@@ -480,7 +481,7 @@ const runLoadingAnimation = async (payload, stopPromise) => {
   setStep(0);
 
   while (loadingLoopRunning) {
-    const waitForNextStep = sleep(1300).then(() => 'step');
+    const waitForNextStep = sleep(LOADING_STEP_DURATION_MS).then(() => 'step');
     const event = await Promise.race(
       requestCompleted ? [waitForNextStep] : [waitForNextStep, requestCompletion]
     );

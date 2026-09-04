@@ -354,6 +354,25 @@ const increaseBtn = document.getElementById('increase');
 const companionList = document.getElementById('companionList');
 const addCompanionBtn = document.getElementById('addCompanion');
 
+// Helper: conta quantas palavras tem no nome (precisamos de 2+: nome + sobrenome)
+const getNameWordCount = (raw) =>
+  (raw || '').trim().split(/\s+/).filter(Boolean).length;
+
+// Validação do nome: retorna null se válido, ou a mensagem de erro
+const validateName = () => {
+  const count = getNameWordCount(nameInput.value);
+  if (count === 0) return 'Por favor, informe seu nome.';
+  if (count < 2) return 'Por favor, informe nome e sobrenome.';
+  return null;
+};
+
+// Feedback visual em tempo real: borda do campo muda conforme a pessoa digita
+nameInput?.addEventListener('input', () => {
+  const count = getNameWordCount(nameInput.value);
+  nameInput.classList.toggle('is-valid', count >= 2);
+  nameInput.classList.toggle('is-invalid', count > 0 && count < 2);
+});
+
 const state = {
   step: 1,
   totalSteps: 4,
@@ -543,8 +562,9 @@ document.querySelectorAll('[data-next]').forEach((btn) => {
   btn.addEventListener('click', () => {
     errorMessage.textContent = '';
     if (state.step === 2) {
-      if (!nameInput.value.trim()) {
-        errorMessage.textContent = 'Por favor, informe seu nome.';
+      const nameError = validateName();
+      if (nameError) {
+        errorMessage.textContent = nameError;
         nameInput.focus();
         return;
       }
@@ -587,9 +607,11 @@ const submitConfirmation = async (e) => {
   e.preventDefault();
   errorMessage.textContent = '';
 
-  if (!nameInput.value.trim()) {
-    errorMessage.textContent = 'Por favor, informe seu nome.';
+  const nameError = validateName();
+  if (nameError) {
+    errorMessage.textContent = nameError;
     showPanel(2);
+    nameInput.focus();
     return;
   }
   if (!state.attendanceChoice) {

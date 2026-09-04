@@ -1559,6 +1559,25 @@ a {
   box-shadow: 0 0 0 3px rgba(92, 56, 69, 0.08);
 }
 
+/* feedback em tempo real no campo de nome: borda muda quando atinge 2+ palavras */
+.field input.is-valid {
+  border-color: var(--sage-deep);
+  box-shadow: 0 0 0 3px rgba(106, 134, 101, 0.10);
+}
+.field input.is-invalid {
+  border-color: var(--rose-deep);
+  box-shadow: 0 0 0 3px rgba(184, 90, 110, 0.10);
+}
+
+/* hint abaixo do campo (texto auxiliar discreto) */
+.field-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-mute);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
 .field textarea {
   resize: vertical;
   min-height: 80px;

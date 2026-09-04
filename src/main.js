@@ -851,11 +851,12 @@ const submitConfirmation = async (e) => {
       } else {
         errorMessage.textContent = result?.error || 'Nao foi possivel enviar a confirmacao.';
       }
-      // Volta a mostrar o form pra pessoa tentar de novo
+      // Volta ao formulário de nomes para corrigir duplicidades ou outros erros.
       form.hidden = false;
       if (successWrap) successWrap.hidden = true;
       if (rsvpInner) rsvpInner.classList.remove('is-success');
       if (wizardLoading) wizardLoading.hidden = true;
+      showPanel(2);
       return;
     }
 

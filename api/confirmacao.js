@@ -63,6 +63,16 @@ function sanitizeText(value) {
   return value.trim().slice(0, 500);
 }
 
+function normalizePersonName(value) {
+  return sanitizeText(value).replace(/\s+/g, " ").toLocaleUpperCase("pt-BR");
+}
+
+function normalizePersonKey(value) {
+  return normalizePersonName(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function normalizeMoment(rawMoment) {
   if (typeof rawMoment !== "string") {
     return "";
@@ -111,6 +121,13 @@ function getCompanionNames(value) {
     .split(",")
     .map((name) => name.trim())
     .filter(Boolean);
+}
+
+function normalizeCompanions(value) {
+  return getCompanionNames(value)
+    .map(normalizePersonName)
+    .filter(Boolean)
+    .join(", ");
 }
 
 function chunkText(rawText, chunkLength = 2800) {
@@ -162,6 +179,36 @@ function getEntryPeopleCount(entry) {
   return normalizeAttendees(entry.attendees, entry.companions);
 }
 
+function getEntryNames(entry) {
+  return [entry.name, ...getCompanionNames(entry.companions)]
+    .map(normalizePersonName)
+    .filter(Boolean);
+}
+
+function findDuplicateNames(candidate, existingRows) {
+  const existingKeys = new Set(
+    existingRows.flatMap(getEntryNames).map(normalizePersonKey),
+  );
+  const submittedKeys = new Set();
+  const duplicateKeys = new Set();
+  const duplicates = [];
+
+  getEntryNames(candidate).forEach((name) => {
+    const key = normalizePersonKey(name);
+    if ((existingKeys.has(key) || submittedKeys.has(key)) && !duplicateKeys.has(key)) {
+      duplicates.push(name);
+      duplicateKeys.add(key);
+    }
+    submittedKeys.add(key);
+  });
+
+  return duplicates;
+}
+
+function buildDuplicateError(duplicateNames) {
+  return `Já existe uma confirmação para: ${duplicateNames.join(", ")}. Confira os nomes e tente novamente.`;
+}
+
 function parseWillAttend(value) {
   if (typeof value === "boolean") {
     return value;
@@ -188,10 +235,11 @@ function formatConfirmationLine(item) {
   const people = getEntryPeopleCount(item);
   const attendeesText = formatPeopleCount(people);
   const momentText = item.will_attend ? buildListForMoment(item.moment || "") : "-";
-  const companionNames = getCompanionNames(item.companions);
+  const name = normalizePersonName(item.name);
+  const companionNames = getCompanionNames(item.companions).map(normalizePersonName);
   const namesText = companionNames.length ? ` + ${companionNames.join(", ")}` : "";
 
-  return `• *${item.name}*${namesText} • ${attendeesText} • ${momentText}`;
+  return `• *${name}*${namesText} • ${attendeesText} • ${momentText}`;
 }
 
 function buildListText(rows) {
@@ -404,10 +452,10 @@ function isMongoConfigured() {
 }
 
 function normalizePayload(raw) {
-  const name = sanitizeText(raw.name);
+  const name = normalizePersonName(raw.name);
   const willAttend = parseWillAttend(raw.willAttend);
   const moment = willAttend ? normalizeMoment(raw.attendanceMode || raw.moment || "") : "";
-  const companions = sanitizeText(raw.companions);
+  const companions = normalizeCompanions(raw.companions);
   const attendees = willAttend ? normalizeAttendees(raw.attendees, companions) : 1;
   const note = sanitizeText(raw.note);
 
@@ -520,7 +568,12 @@ async function getAllConfirmations() {
   }
 }
 
-export { buildMessageBlocks, normalizePayload };
+export {
+  buildDuplicateError,
+  buildMessageBlocks,
+  findDuplicateNames,
+  normalizePayload,
+};
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -547,6 +600,23 @@ export default async function handler(req, res) {
       return res.status(400).json({
         error: "Selecione de quais momentos você participará.",
       });
+    }
+
+    if (isMongoConfigured()) {
+      const existingEntriesResult = await getAllConfirmations();
+      if (!existingEntriesResult.success) {
+        console.error("[confirmacao] não foi possível validar duplicidade:", existingEntriesResult.reason);
+        return res.status(503).json({
+          error: "Não foi possível validar sua confirmação agora. Tente novamente em alguns instantes.",
+        });
+      }
+
+      const duplicateNames = findDuplicateNames(data, existingEntriesResult.data);
+      if (duplicateNames.length) {
+        return res.status(409).json({
+          error: buildDuplicateError(duplicateNames),
+        });
+      }
     }
 
     // Sem MongoDB configurado: a confirmação é registrada nos logs do Vercel
@@ -615,10 +685,8 @@ export default async function handler(req, res) {
           at: new Date().toISOString(),
         }),
       );
-      return res.status(200).json({
-        success: true,
-        message: "Confirmação recebida.",
-        stored: "log",
+      return res.status(503).json({
+        error: "Não foi possível salvar sua confirmação agora. Tente novamente em alguns instantes.",
       });
     }
 

@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildMessageBlocks, normalizePayload } from "./confirmacao.js";
+import {
+  buildMessageBlocks,
+  findDuplicateNames,
+  normalizePayload,
+} from "./confirmacao.js";
 
 test("conta o titular e os acompanhantes quando os nomes são informados", () => {
   const payload = normalizePayload({
@@ -13,7 +17,7 @@ test("conta o titular e os acompanhantes quando os nomes são informados", () =>
   });
 
   assert.equal(payload.attendees, 2);
-  assert.equal(payload.companions, "Allan Monteiro");
+  assert.equal(payload.companions, "ALLAN MONTEIRO");
 });
 
 test("preserva a quantidade explícita escolhida no contador", () => {
@@ -72,7 +76,7 @@ test("usa a quantidade corrigida nos totais e na lista do Slack", () => {
   assert.doesNotMatch(slackText, /\*Restaurante:\*/);
   assert.doesNotMatch(slackText, /\*Igreja:\*/);
   assert.match(slackText, /\*Participantes:\* 2 pessoas/);
-  assert.match(slackText, /• \*Nathelly Monteiro\* \+ Allan Monteiro • 2 pessoas • Igreja \+ Restaurante/);
+  assert.match(slackText, /• \*NATHELLY MONTEIRO\* \+ ALLAN MONTEIRO • 2 pessoas • Igreja \+ Restaurante/);
 });
 
 test("corrige a contagem de registros antigos com acompanhantes nomeados", () => {
@@ -100,5 +104,39 @@ test("corrige a contagem de registros antigos com acompanhantes nomeados", () =>
     .join("\n");
 
   assert.match(slackText, /\*Pessoas confirmadas\* \(2 pessoas\)/);
-  assert.match(slackText, /• \*Nathelly Monteiro\* \+ Allan Monteiro • 2 pessoas • Igreja \+ Restaurante/);
+  assert.match(slackText, /• \*NATHELLY MONTEIRO\* \+ ALLAN MONTEIRO • 2 pessoas • Igreja \+ Restaurante/);
+});
+
+test("salva o titular e os acompanhantes com nomes normalizados", () => {
+  const payload = normalizePayload({
+    name: " nathelly   monteiro ",
+    willAttend: "sim",
+    attendees: 0,
+    attendanceMode: "ambos",
+    companions: " allan monteiro,  Maria Cecília ",
+  });
+
+  assert.equal(payload.name, "NATHELLY MONTEIRO");
+  assert.equal(payload.companions, "ALLAN MONTEIRO, MARIA CECÍLIA");
+});
+
+test("detecta titular ou acompanhante já presente na lista", () => {
+  const duplicates = findDuplicateNames(
+    {
+      name: "Nathelly Monteiro",
+      companions: "Allan Monteiro",
+    },
+    [
+      {
+        name: "allan monteiro",
+        companions: "Outra Pessoa",
+      },
+      {
+        name: "NATHELLY MONTEIRO",
+        companions: "",
+      },
+    ],
+  );
+
+  assert.deepEqual(duplicates, ["NATHELLY MONTEIRO", "ALLAN MONTEIRO"]);
 });

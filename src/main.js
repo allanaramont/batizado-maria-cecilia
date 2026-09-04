@@ -145,23 +145,65 @@ const revealObserver = new IntersectionObserver(
 );
 
 revealTargets.forEach((el) => revealObserver.observe(el));
-splitTargets.forEach((el) => revealObserver.observe(el));
 displayLines.forEach((el) => revealObserver.observe(el));
 
-// Above-the-fold elements (hero) show immediately on load.
-const showAboveFold = () => {
+/* =============================================================
+   3b. TYPEWRITER EFFECT (eyebrow + name)
+   ============================================================= */
+const typeEyebrow = document.getElementById('typeEyebrow');
+const typeName1 = document.getElementById('typeName1');
+const typeName2 = document.getElementById('typeName2');
+const heroMeta = document.querySelector('.hero-meta');
+const heroSub = document.querySelector('.hero-sub');
+const heroCta = document.querySelector('.hero-cta');
+const scrollCue = document.querySelector('.scroll-cue');
+
+// hide other hero elements until typing finishes
+[heroMeta, heroSub, heroCta, scrollCue].forEach((el) => {
+  if (el) el.style.opacity = '0';
+});
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function typeInto(el, text, speed = 55) {
+  if (!el) return;
+  for (let i = 0; i <= text.length; i++) {
+    el.textContent = text.slice(0, i);
+    await sleep(speed);
+  }
+}
+
+async function runTypewriter() {
+  if (hero) hero.classList.add('is-typing');
+  await sleep(450); // brief pause before starting
+  await typeInto(typeEyebrow, 'Você é nosso convidado especial', 55);
+  await sleep(380);
+  await typeInto(typeName1, 'Maria', 130);
+  await sleep(180);
+  await typeInto(typeName2, 'Cecilia', 130);
+  await sleep(420);
+  // reveal the rest of the hero
+  [heroMeta, heroSub, heroCta, scrollCue].forEach((el) => {
+    if (el) {
+      el.style.transition = 'opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out)';
+      el.style.opacity = '1';
+    }
+  });
+  // mark hero as visible so display-lines / split don't stay hidden
   if (hero) hero.classList.add('is-visible');
-  topbar?.classList.add('is-visible');
-  document
-    .querySelectorAll('.hero .display-line, .hero [data-split]')
-    .forEach((el) => el.classList.add('is-visible'));
-};
+  // also flip the display-lines individually (their CSS targets .is-visible on the line itself)
+  document.querySelectorAll('.hero .display-line').forEach((el) => el.classList.add('is-visible'));
+  if (hero) hero.classList.remove('is-typing');
+}
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', showAboveFold);
+  document.addEventListener('DOMContentLoaded', runTypewriter);
 } else {
-  showAboveFold();
+  runTypewriter();
 }
+
+// Above-the-fold elements (topbar) show immediately on load.
+topbar?.classList.add('is-visible');
 
 /* =============================================================
    4. SCROLL PROGRESS
@@ -187,7 +229,6 @@ updateScrollProgress();
 /* =============================================================
    5b. SCROLL CUE — hide after first viewport of scroll
    ============================================================= */
-const scrollCue = document.querySelector('.scroll-cue');
 const updateScrollCue = () => {
   if (!scrollCue) return;
   const threshold = window.innerHeight * 0.1;

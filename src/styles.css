@@ -604,13 +604,13 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: -8px 0;
+  margin: 4px 0;
   pointer-events: none;
   opacity: 0.95;
 }
 
 .hero-dove svg {
-  width: clamp(280px, 40vw, 480px);
+  width: clamp(240px, 34vw, 400px);
   height: auto;
   display: block;
   animation: float-and-bob 7s ease-in-out infinite;
@@ -623,11 +623,11 @@ a {
 }
 
 @keyframes float-and-bob {
-  0%   { transform: translate(-50%, -50%) translate(0, 0) rotate(-1.5deg); }
-  25%  { transform: translate(-50%, -50%) translate(-2px, -3px) rotate(0deg) translateY(-4px); }
-  50%  { transform: translate(-50%, -50%) translate(-6px, -10px) rotate(1.5deg); }
-  75%  { transform: translate(-50%, -50%) translate(-2px, -3px) rotate(0deg) translateY(-4px); }
-  100% { transform: translate(-50%, -50%) translate(0, 0) rotate(-1.5deg); }
+  0%   { transform: translate(0, 0) rotate(-1.5deg); }
+  25%  { transform: translate(-2px, -3px) rotate(0deg); }
+  50%  { transform: translate(-6px, -10px) rotate(1.5deg); }
+  75%  { transform: translate(-2px, -3px) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(-1.5deg); }
 }
 
 @keyframes wing-flap {

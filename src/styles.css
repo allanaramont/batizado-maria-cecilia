@@ -725,10 +725,27 @@ a {
 }
 
 .hero-cta {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
-  justify-content: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.hero-cta .btn-magnetic {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .hero-cta {
+    flex-direction: row;
+    max-width: none;
+    width: auto;
+  }
+  .hero-cta .btn-magnetic {
+    width: auto;
+  }
 }
 
 .scroll-cue {

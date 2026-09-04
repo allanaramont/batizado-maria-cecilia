@@ -127,7 +127,6 @@ if (supportsHover && !prefersReducedMotion) {
 const revealTargets = document.querySelectorAll('[data-reveal]');
 const splitTargets = document.querySelectorAll('[data-split]');
 const displayLines = document.querySelectorAll('.display-line');
-const topbar = document.querySelector('.topbar');
 const hero = document.querySelector('.hero');
 
 const revealObserver = new IntersectionObserver(
@@ -158,6 +157,7 @@ const typeDatePost = document.getElementById('typeDatePost');
 const typeSub = document.getElementById('typeSub');
 const heroCta = document.querySelector('.hero-cta');
 const scrollCue = document.querySelector('.scroll-cue');
+const backToTop = document.querySelector('[data-back-to-top]');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -245,9 +245,6 @@ if (document.readyState === 'loading') {
   runTypewriter();
 }
 
-// Above-the-fold elements (topbar) show immediately on load.
-topbar?.classList.add('is-visible');
-
 /* =============================================================
    4. SCROLL PROGRESS
    ============================================================= */
@@ -280,11 +277,17 @@ const updateScrollCue = () => {
 window.addEventListener('scroll', updateScrollCue, { passive: true });
 updateScrollCue();
 
-/* =============================================================
-   5. SMOOTH SCROLL WITH OFFSET (for topbar anchor links)
-   ============================================================= */
-const topbarOffset = 90;
+const updateBackToTop = () => {
+  if (!backToTop) return;
+  backToTop.classList.toggle('is-visible', window.scrollY > window.innerHeight * 0.6);
+};
 
+window.addEventListener('scroll', updateBackToTop, { passive: true });
+updateBackToTop();
+
+/* =============================================================
+   5. SMOOTH SCROLL
+============================================================= */
 document.querySelectorAll('a[href^="#"]').forEach((link) => {
   link.addEventListener('click', (e) => {
     const href = link.getAttribute('href');
@@ -292,7 +295,7 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     const target = document.querySelector(href);
     if (!target) return;
     e.preventDefault();
-    const top = target.getBoundingClientRect().top + window.scrollY - topbarOffset;
+    const top = target.getBoundingClientRect().top + window.scrollY;
     window.scrollTo({ top, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
   });
 });
@@ -435,9 +438,16 @@ const runLoadingAnimation = async (payload, stopPromise) => {
   if (wizardLoading) wizardLoading.hidden = false;
   if (successFinal) successFinal.hidden = true;
 
-  // loop principal: cicla pelas etapas ate stopPromise resolver
+  // loop principal: se a API responder cedo, termina o primeiro ciclo antes
+  // de revelar o sucesso; se demorar, continua ciclando ate ela responder.
   loadingLoopRunning = true;
   let idx = 0;
+  let completedFirstCycle = stepKeys.length === 1;
+  let requestCompleted = false;
+  const requestCompletion = stopPromise.then(() => {
+    requestCompleted = true;
+    return 'request';
+  });
 
   const setStep = (i) => {
     const key = stepKeys[i];
@@ -470,15 +480,22 @@ const runLoadingAnimation = async (payload, stopPromise) => {
   setStep(0);
 
   while (loadingLoopRunning) {
-    // espera 1.3s antes de avancar
-    await Promise.race([sleep(1300), stopPromise]);
+    const waitForNextStep = sleep(1300).then(() => 'step');
+    const event = await Promise.race(
+      requestCompleted ? [waitForNextStep] : [waitForNextStep, requestCompletion]
+    );
 
     if (!loadingLoopRunning) break;
+    if (requestCompleted && completedFirstCycle) break;
+    if (event !== 'step') continue;
 
     // avanca para a proxima etapa (com loop)
     idx = (idx + 1) % stepKeys.length;
     setStep(idx);
+    if (idx === stepKeys.length - 1) completedFirstCycle = true;
   }
+
+  loadingLoopRunning = false;
 };
 
 const stopLoadingAnimation = () => {
@@ -796,7 +813,8 @@ const submitConfirmation = async (e) => {
   if (wizardLoading) wizardLoading.hidden = false;
   if (successFinal) successFinal.hidden = true;
 
-  // Cria um Promise que so resolve quando o submit termina (sucesso ou erro)
+  // Cria um Promise que sinaliza quando o submit termina (sucesso ou erro).
+  // O carrossel usa esse sinal, mas só para depois do primeiro ciclo completo.
   let stopResolve;
   const stopPromise = new Promise((resolve) => {
     stopResolve = resolve;
@@ -816,9 +834,9 @@ const submitConfirmation = async (e) => {
 
     const result = await response.json().catch(() => ({}));
 
-    // Para o loop de loading independente do resultado
+    // Sinaliza o fim da requisição; a animação termina o ciclo atual antes
+    // de mostrar o card confirmado.
     stopResolve();
-    stopLoadingAnimation();
     await loadingPromise;
 
     if (!response.ok) {
@@ -846,9 +864,9 @@ const submitConfirmation = async (e) => {
     if (wizardLoading) wizardLoading.hidden = true;
     if (successFinal) successFinal.hidden = false;
   } catch {
-    // Para o loop tambem em caso de erro de rede
+    // Mesmo em erro, deixa a sequência visual terminar antes de devolver o
+    // formulário, evitando um corte brusco da animação.
     stopResolve();
-    stopLoadingAnimation();
     await loadingPromise;
     errorMessage.textContent =
       'Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.';

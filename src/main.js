@@ -345,6 +345,7 @@ const form = document.getElementById('confirmationForm');
 const errorMessage = document.getElementById('errorMessage');
 const successMessage = document.getElementById('successMessage');
 const successWrap = document.querySelector('.wizard-success');
+const rsvpInner = document.querySelector('.rsvp-inner');
 const wpItems = document.querySelectorAll('.wp-item');
 
 const nameInput = document.getElementById('name');
@@ -528,6 +529,7 @@ const resetWizard = () => {
   );
   if (successWrap) successWrap.hidden = true;
   if (form) form.hidden = false;
+  if (rsvpInner) rsvpInner.classList.remove('is-success');
   showPanel(1);
 };
 
@@ -637,7 +639,10 @@ const submitConfirmation = async (e) => {
   };
 
   const submitBtn = form.querySelector('button[type="submit"]');
-  if (submitBtn) submitBtn.disabled = true;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.classList.add('is-submitting');
+  }
 
   try {
     const response = await fetch(API_ENDPOINT, {
@@ -648,14 +653,17 @@ const submitConfirmation = async (e) => {
 
     const result = await response.json().catch(() => ({}));
 
-    if (response.status === 202 && result?.disabled) {
-      errorMessage.textContent =
-        'Confirmação recebida, mas a integração ainda não está ativa.';
-      return;
-    }
-
     if (!response.ok) {
-      errorMessage.textContent = result?.error || 'Não foi possível enviar a confirmação.';
+      // Mensagens de erro mais uteis dependendo do status
+      if (response.status === 404) {
+        errorMessage.textContent =
+          'A confirmacao so funciona em producao. Teste em batizado.desenvbr.com ou rode vercel dev localmente.';
+      } else if (response.status === 0 || response.status >= 500) {
+        errorMessage.textContent =
+          'Nosso servidor esta demorando pra responder. Tente de novo em alguns instantes.';
+      } else {
+        errorMessage.textContent = result?.error || 'Nao foi possivel enviar a confirmacao.';
+      }
       return;
     }
 
@@ -663,10 +671,16 @@ const submitConfirmation = async (e) => {
       payload.willAttend === 'sim' ? SUCCESS_MESSAGE_SIM : SUCCESS_MESSAGE_NAO;
     form.hidden = true;
     if (successWrap) successWrap.hidden = false;
+    // esconde o titulo "Estara conosco nesse dia?" pra nao confundir
+    if (rsvpInner) rsvpInner.classList.add('is-success');
   } catch {
-    errorMessage.textContent = 'Não foi possível enviar. Tente novamente em instantes.';
+    errorMessage.textContent =
+      'Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.';
   } finally {
-    if (submitBtn) submitBtn.disabled = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('is-submitting');
+    }
   }
 };
 

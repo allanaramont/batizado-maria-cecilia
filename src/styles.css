@@ -1222,6 +1222,54 @@ a {
   background: linear-gradient(90deg, transparent, rgba(212, 133, 154, 0.4), transparent);
 }
 
+/* quando o wizard entra em estado de sucesso, esconde o titulo
+   "Estará conosco nesse dia?" pra não confundir o convidado */
+.rsvp-inner.is-success .section-head {
+  opacity: 0;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  transition:
+    opacity 0.4s var(--ease-out),
+    max-height 0.4s var(--ease-out),
+    margin 0.4s var(--ease-out);
+}
+
+/* estado de loading no botão de submit: esconde texto normal,
+   mostra texto com spinner */
+.btn-text-loading {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+button.is-submitting .btn-text-loading {
+  display: inline-flex;
+}
+button.is-submitting .btn-text:not(.btn-text-loading) {
+  display: none;
+}
+button.is-submitting .btn-icon {
+  display: none;
+}
+button.is-submitting {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
 .wizard-panel {
   animation: panel-in 0.55s var(--ease-out);
 }

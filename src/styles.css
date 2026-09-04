@@ -641,8 +641,7 @@ a {
 .hero h1,
 .hero .hero-meta,
 .hero .hero-sub,
-.hero .hero-cta,
-.hero .scroll-cue {
+.hero .hero-cta {
   position: relative;
   z-index: 1;
 }
@@ -733,8 +732,12 @@ a {
 }
 
 .scroll-cue {
-  position: relative;
-  margin: clamp(32px, 6vh, 56px) auto 0;
+  position: absolute;
+  bottom: 32px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: max-content;
   display: inline-flex;
   flex-direction: column;
   align-items: center;

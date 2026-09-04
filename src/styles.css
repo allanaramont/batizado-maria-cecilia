@@ -608,15 +608,26 @@ a {
   left: 50%;
   transform: translate(-50%, -50%);
   opacity: 0.95;
-  animation: float 8s ease-in-out infinite;
+  animation: float 7s ease-in-out infinite;
   z-index: 0;
   pointer-events: none;
   overflow: visible;
 }
 
+.dove-wings {
+  transform-origin: 120px 130px;
+  transform-box: view-box;
+  animation: wing-flap 1.6s ease-in-out infinite;
+}
+
 @keyframes float {
-  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-  50% { transform: translate(-50%, -50%) translateY(-12px); }
+  0%, 100% { transform: translate(-50%, -50%) translate(0, 0) rotate(-1.5deg); }
+  50%      { transform: translate(-50%, -50%) translate(-6px, -10px) rotate(1.5deg); }
+}
+
+@keyframes wing-flap {
+  0%, 100% { transform: scaleY(1); }
+  50%      { transform: scaleY(0.45); }
 }
 
 .hero .eyebrow,

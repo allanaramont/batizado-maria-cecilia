@@ -615,6 +615,7 @@ export default async function handler(req, res) {
       if (duplicateNames.length) {
         return res.status(409).json({
           error: buildDuplicateError(duplicateNames),
+          duplicateNames,
         });
       }
     }

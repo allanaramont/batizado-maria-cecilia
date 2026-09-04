@@ -1482,9 +1482,17 @@ a {
 
 .companion-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   animation: row-in 0.35s var(--ease-out);
+}
+
+.companion-input-wrap {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
 }
 
 @keyframes row-in {
@@ -1619,6 +1627,10 @@ a {
   letter-spacing: 0.02em;
 }
 
+.field-hint-error {
+  color: var(--rose-deep);
+}
+
 .field textarea {
   resize: vertical;
   min-height: 80px;
@@ -1739,6 +1751,37 @@ a {
 }
 
 /* messages */
+.toast {
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  bottom: 24px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 14px 18px;
+  border: 1px solid rgba(184, 90, 110, 0.4);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 0 14px 36px rgba(92, 56, 69, 0.22);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, calc(100% + 24px));
+  transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+  pointer-events: none;
+}
+
+.toast[hidden] {
+  display: block;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .error-message {
   margin: 0;
   padding: 0;

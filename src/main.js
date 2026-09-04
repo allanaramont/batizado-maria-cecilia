@@ -353,7 +353,8 @@ const loadingIllustration = document.getElementById('loadingIllustration');
 const loadingStepTitle = document.getElementById('loadingStepTitle');
 const loadingStepDesc = document.getElementById('loadingStepDesc');
 const loadingDots = document.getElementById('loadingDots');
-const LOADING_STEP_DURATION_MS = 3900;
+const toast = document.getElementById('toast');
+const LOADING_STEP_DURATION_MS = 2000;
 
 // textos de cada etapa (titulo + descricao)
 const LOADING_STEP_DEFINITIONS = {
@@ -505,6 +506,7 @@ const stopLoadingAnimation = () => {
 const wpItems = document.querySelectorAll('.wp-item');
 
 const nameInput = document.getElementById('name');
+const nameHint = document.getElementById('nameHint');
 const attendeesInput = document.getElementById('attendees');
 const decreaseBtn = document.getElementById('decrease');
 const increaseBtn = document.getElementById('increase');
@@ -514,6 +516,17 @@ const addCompanionBtn = document.getElementById('addCompanion');
 // Helper: conta quantas palavras tem no nome (precisamos de 2+: nome + sobrenome)
 const getNameWordCount = (raw) =>
   (raw || '').trim().split(/\s+/).filter(Boolean).length;
+
+const normalizeNameForFeedback = (raw) =>
+  (raw || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toUpperCase();
+
+const DUPLICATE_NAME_HINT = 'Esta pessoa já possui uma confirmação.';
+const DEFAULT_NAME_HINT = 'Informe nome e sobrenome para sabermos quem é você.';
 
 // Validação do nome: retorna null se válido, ou a mensagem de erro
 const validateName = () => {
@@ -525,6 +538,7 @@ const validateName = () => {
 
 // Feedback visual em tempo real: borda do campo muda conforme a pessoa digita
 nameInput?.addEventListener('input', () => {
+  clearDuplicateFeedback();
   const count = getNameWordCount(nameInput.value);
   nameInput.classList.toggle('is-valid', count >= 2);
   nameInput.classList.toggle('is-invalid', count > 0 && count < 2);
@@ -538,6 +552,64 @@ const state = {
   attendees: 1,
   companionMode: null, // 'count' | 'names'
   companionNames: [], // array of strings
+  duplicateNames: [],
+};
+
+let toastTimer;
+
+const showToast = (message) => {
+  if (!toast) return;
+  window.clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.hidden = false;
+  toast.classList.add('is-visible');
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove('is-visible');
+    toast.hidden = true;
+  }, 5200);
+};
+
+const clearDuplicateFeedback = () => {
+  state.duplicateNames = [];
+  nameInput?.classList.remove('is-invalid');
+  nameInput?.removeAttribute('aria-invalid');
+  if (nameHint) {
+    nameHint.textContent = DEFAULT_NAME_HINT;
+    nameHint.classList.remove('field-hint-error');
+  }
+  companionList?.querySelectorAll('input.is-invalid').forEach((input) => {
+    input.classList.remove('is-invalid');
+    input.removeAttribute('aria-invalid');
+    input.parentElement?.querySelector('.field-hint-error')?.remove();
+  });
+};
+
+const setDuplicateFeedback = (duplicateNames) => {
+  state.duplicateNames = duplicateNames.map(normalizeNameForFeedback).filter(Boolean);
+  const duplicateTitular = state.duplicateNames.includes(normalizeNameForFeedback(nameInput?.value));
+
+  if (duplicateTitular) {
+    nameInput?.classList.remove('is-valid');
+    nameInput?.classList.add('is-invalid');
+    nameInput?.setAttribute('aria-invalid', 'true');
+    if (nameHint) {
+      nameHint.textContent = DUPLICATE_NAME_HINT;
+      nameHint.classList.add('field-hint-error');
+    }
+  }
+
+  renderCompanions();
+};
+
+const showSubmissionFailure = (message, duplicateNames = []) => {
+  form.hidden = false;
+  if (successWrap) successWrap.hidden = true;
+  if (rsvpInner) rsvpInner.classList.remove('is-success');
+  if (wizardLoading) wizardLoading.hidden = true;
+  showPanel(2);
+  errorMessage.textContent = message;
+  setDuplicateFeedback(duplicateNames);
+  showToast(message);
 };
 
 const MOMENT_LABEL = {
@@ -580,8 +652,12 @@ const renderCompanions = () => {
   state.companionNames.forEach((name, idx) => {
     const row = document.createElement('div');
     row.className = 'companion-row';
+    const isDuplicate = state.duplicateNames.includes(normalizeNameForFeedback(name));
     row.innerHTML = `
-      <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" />
+      <div class="companion-input-wrap">
+        <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" class="${isDuplicate ? 'is-invalid' : ''}" ${isDuplicate ? 'aria-invalid="true"' : ''} />
+        ${isDuplicate ? `<span class="field-hint field-hint-error">${DUPLICATE_NAME_HINT}</span>` : ''}
+      </div>
       <button type="button" class="ic-remove" aria-label="Remover" data-remove-companion="${idx}">×</button>
     `;
     companionList.appendChild(row);
@@ -590,7 +666,14 @@ const renderCompanions = () => {
   companionList.querySelectorAll('input').forEach((inp) => {
     inp.addEventListener('input', (e) => {
       const i = Number(e.target.dataset.companionIdx);
+      const previousName = state.companionNames[i];
       state.companionNames[i] = e.target.value;
+      state.duplicateNames = state.duplicateNames.filter(
+        (duplicateName) => duplicateName !== normalizeNameForFeedback(previousName)
+      );
+      e.target.classList.remove('is-invalid');
+      e.target.removeAttribute('aria-invalid');
+      e.target.parentElement?.querySelector('.field-hint-error')?.remove();
     });
   });
   companionList.querySelectorAll('[data-remove-companion]').forEach((btn) => {
@@ -676,7 +759,9 @@ const resetWizard = () => {
   state.attendees = 1;
   state.companionMode = null;
   state.companionNames = [];
+  state.duplicateNames = [];
   form.reset();
+  clearDuplicateFeedback();
   setAttendees(1);
   setCompanionMode(null);
   renderCompanions();
@@ -774,19 +859,19 @@ const submitConfirmation = async (e) => {
 
   const nameError = validateName();
   if (nameError) {
-    errorMessage.textContent = nameError;
     showPanel(2);
+    errorMessage.textContent = nameError;
     nameInput.focus();
     return;
   }
   if (!state.attendanceChoice) {
-    errorMessage.textContent = 'Escolha uma opção de presença.';
     showPanel(1);
+    errorMessage.textContent = 'Escolha uma opção de presença.';
     return;
   }
   if (state.attendanceChoice === 'sim' && !state.attendanceMoment) {
-    errorMessage.textContent = 'Selecione de quais momentos você participará.';
     showPanel(3);
+    errorMessage.textContent = 'Selecione de quais momentos você participará.';
     return;
   }
 
@@ -841,22 +926,17 @@ const submitConfirmation = async (e) => {
     await loadingPromise;
 
     if (!response.ok) {
-      // Mensagens de erro mais uteis dependendo do status
+      let message;
       if (response.status === 404) {
-        errorMessage.textContent =
-          'A confirmacao so funciona em producao. Teste em batizado.desenvbr.com ou rode vercel dev localmente.';
+        message =
+          'A confirmação só funciona em produção. Teste em batizado.desenvbr.com ou rode vercel dev localmente.';
       } else if (response.status === 0 || response.status >= 500) {
-        errorMessage.textContent =
-          'Nosso servidor esta demorando pra responder. Tente de novo em alguns instantes.';
+        message = 'Nosso servidor está demorando para responder. Tente de novo em alguns instantes.';
       } else {
-        errorMessage.textContent = result?.error || 'Nao foi possivel enviar a confirmacao.';
+        message = result?.error || 'Não foi possível enviar a confirmação.';
       }
-      // Volta ao formulário de nomes para corrigir duplicidades ou outros erros.
-      form.hidden = false;
-      if (successWrap) successWrap.hidden = true;
-      if (rsvpInner) rsvpInner.classList.remove('is-success');
-      if (wizardLoading) wizardLoading.hidden = true;
-      showPanel(2);
+      const duplicateNames = Array.isArray(result?.duplicateNames) ? result.duplicateNames : [];
+      showSubmissionFailure(message, duplicateNames);
       return;
     }
 
@@ -866,17 +946,11 @@ const submitConfirmation = async (e) => {
     if (wizardLoading) wizardLoading.hidden = true;
     if (successFinal) successFinal.hidden = false;
   } catch {
-    // Mesmo em erro, deixa a sequência visual terminar antes de devolver o
-    // formulário, evitando um corte brusco da animação.
     stopResolve();
     await loadingPromise;
-    errorMessage.textContent =
-      'Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.';
-    // Volta a mostrar o form
-    form.hidden = false;
-    if (successWrap) successWrap.hidden = true;
-    if (rsvpInner) rsvpInner.classList.remove('is-success');
-    if (wizardLoading) wizardLoading.hidden = true;
+    showSubmissionFailure(
+      'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.'
+    );
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;

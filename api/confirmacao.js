@@ -538,12 +538,44 @@ export default async function handler(req, res) {
       });
     }
 
+    // Sem MongoDB configurado: a confirmação é registrada nos logs do Vercel
+    // e retornamos sucesso para o convidado. Allan acompanha pelo painel da Vercel.
     if (!isMongoConfigured()) {
-      return res.status(202).json({
-        success: false,
-        disabled: true,
-        message:
-          "Confirmação recebida, mas a integração de armazenamento não está configurada (MongoDB).",
+      console.log(
+        "[confirmacao] (sem MongoDB) nova confirmação:",
+        JSON.stringify({
+          name: data.name,
+          willAttend: isAttending,
+          moment: data.moment || null,
+          attendees: data.attendees,
+          companions: data.companions || null,
+          note: data.note || null,
+          at: new Date().toISOString(),
+        }),
+      );
+
+      // Tenta avisar no Slack mesmo sem MongoDB, se houver credencial.
+      const slackPayload = buildMessageBlocks(
+        {
+          name: data.name,
+          willAttend: isAttending,
+          attendees: data.attendees,
+          moment: data.moment,
+          note: data.note,
+          createdAtText: data.createdAtText,
+        },
+        [],
+      );
+      const slackResult = await sendToSlack(slackPayload);
+      if (!slackResult.success && slackResult.reason !== "missing_slack_credentials") {
+        console.warn("[confirmacao] Slack falhou:", slackResult.reason);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Confirmação recebida.",
+        stored: "log",
+        slack: slackResult.success,
       });
     }
 
@@ -558,19 +590,29 @@ export default async function handler(req, res) {
     });
 
     if (!saved.success) {
-      return res.status(502).json({
-        error: saved.reason || "Erro ao registrar confirmação no banco.",
+      console.error("[confirmacao] erro no MongoDB:", saved.reason);
+      // Mesmo com erro no banco, loga a confirmação para não perder o dado.
+      console.log(
+        "[confirmacao] (fallback log) nova confirmação:",
+        JSON.stringify({
+          name: data.name,
+          willAttend: isAttending,
+          moment: data.moment || null,
+          attendees: data.attendees,
+          companions: data.companions || null,
+          note: data.note || null,
+          at: new Date().toISOString(),
+        }),
+      );
+      return res.status(200).json({
+        success: true,
+        message: "Confirmação recebida.",
+        stored: "log",
       });
     }
 
     const allEntriesResult = await getAllConfirmations();
-    if (!allEntriesResult.success) {
-      return res.status(502).json({
-        error: allEntriesResult.reason || "Erro ao carregar lista atualizada.",
-      });
-    }
-
-    const allEntries = allEntriesResult.data;
+    const allEntries = allEntriesResult.success ? allEntriesResult.data : [];
     const totals = countTotals(allEntries);
 
     const slackPayload = buildMessageBlocks(
@@ -587,25 +629,15 @@ export default async function handler(req, res) {
 
     const slackResult = await sendToSlack(slackPayload);
 
-    if (!slackResult.success) {
-      if (slackResult.reason === "missing_slack_credentials") {
-        return res.status(202).json({
-          success: false,
-          disabled: true,
-          message: "Confirmação recebida, mas o envio para Slack não está configurado.",
-          total: totals,
-        });
-      }
-
-      return res
-        .status(502)
-        .json({ error: slackResult.reason || "Erro ao enviar para o Slack." });
+    if (!slackResult.success && slackResult.reason !== "missing_slack_credentials") {
+      console.warn("[confirmacao] Slack falhou:", slackResult.reason);
     }
 
     return res.status(200).json({
       success: true,
-      message: "Confirmação enviada e lista atualizada enviada ao Slack.",
+      message: "Confirmação enviada.",
       total: totals,
+      slack: slackResult.success,
     });
   } catch (error) {
     const message =
@@ -613,6 +645,7 @@ export default async function handler(req, res) {
         ? error.message
         : "Erro ao registrar confirmação.";
 
+    console.error("[confirmacao] erro inesperado:", message);
     return res.status(500).json({ error: message });
   }
 }

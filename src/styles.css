@@ -1239,32 +1239,79 @@ a {
 .choice-row {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .choice-row .btn-magnetic {
   width: 100%;
   justify-content: center;
+  padding: 18px 24px;
+  min-height: 60px;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  transition:
+    background 0.3s var(--ease-out),
+    color 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out),
+    transform 0.25s var(--ease-out);
+}
+
+.choice-row .btn-magnetic:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px var(--ink), 0 6px 20px rgba(92, 56, 69, 0.10);
 }
 
 .moment-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .moment-stack .btn-magnetic {
   width: 100%;
   justify-content: flex-start;
-  padding: 14px 20px;
+  padding: 18px 22px;
+  min-height: 64px;
+  border-radius: var(--radius-md);
+  transition:
+    background 0.3s var(--ease-out),
+    color 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out),
+    transform 0.25s var(--ease-out);
+}
+
+.moment-stack .btn-magnetic:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px var(--ink), 0 6px 20px rgba(92, 56, 69, 0.10);
+}
+
+.moment-stack .btn-magnetic.is-active {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--ink), 0 8px 24px rgba(92, 56, 69, 0.18);
+}
+
+.moment-stack .btn-magnetic.is-active .btn-bg {
+  background: var(--ink);
 }
 
 .moment-stack .btn-text {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   justify-content: flex-start;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.moment-stack .m-icon {
+  font-size: 20px;
+  font-style: normal;
+  font-family: var(--font-accent);
+  width: 28px;
+  text-align: center;
 }
 
 .btn-magnetic.is-active {
@@ -1309,24 +1356,35 @@ a {
 
 /* companion toggle (step 2) */
 .companion-toggle {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .companion-toggle .btn-magnetic {
-  flex: 1 1 220px;
   background: transparent;
   color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--surface-line-strong);
-  padding: 14px 20px;
-  justify-content: flex-start;
+  padding: 18px 18px;
+  min-height: 72px;
+  border-radius: var(--radius-md);
+  transition:
+    background 0.3s var(--ease-out),
+    color 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out),
+    transform 0.25s var(--ease-out);
+}
+
+.companion-toggle .btn-magnetic:hover {
+  box-shadow: inset 0 0 0 1px var(--ink);
+  transform: translateY(-1px);
 }
 
 .companion-toggle .btn-magnetic.is-active {
   background: var(--ink);
   color: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink), 0 8px 24px rgba(92, 56, 69, 0.18);
+  transform: translateY(0);
 }
 
 .companion-toggle .btn-magnetic.is-active .btn-bg {
@@ -1334,11 +1392,26 @@ a {
 }
 
 .companion-toggle .btn-text {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   width: 100%;
-  justify-content: flex-start;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.companion-toggle .m-icon {
+  font-size: 18px;
+  opacity: 0.85;
+  font-style: normal;
+  font-family: var(--font-accent);
+}
+
+.companion-toggle .btn-magnetic.is-active .m-icon {
+  opacity: 1;
 }
 
 .companion-area {
@@ -1497,39 +1570,54 @@ a {
   align-items: center;
   background: var(--bg);
   border: 1px solid var(--surface-line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   overflow: hidden;
   width: fit-content;
+  padding: 4px;
+  gap: 4px;
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+
+.counter:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(92, 56, 69, 0.08);
 }
 
 .counter button {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   font-size: 18px;
   font-weight: 500;
   color: var(--ink);
-  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
+  border-radius: 999px;
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out), transform 0.15s var(--ease-out);
 }
 
 .counter button:hover:not(:disabled) {
   background: var(--ink);
   color: var(--bg);
+  transform: scale(1.05);
+}
+
+.counter button:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 .counter button:disabled {
-  opacity: 0.35;
+  opacity: 0.25;
 }
 
 .counter input {
-  width: 56px;
+  width: 48px;
   text-align: center;
   border: 0;
   background: transparent;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 500;
   padding: 0;
   font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .wizard-nav {

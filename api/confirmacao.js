@@ -231,15 +231,16 @@ function parseWillAttend(value) {
   return Boolean(value);
 }
 
-function formatConfirmationLine(item) {
+function formatConfirmationLines(item) {
   const people = getEntryPeopleCount(item);
   const attendeesText = formatPeopleCount(people);
   const momentText = item.will_attend ? buildListForMoment(item.moment || "") : "-";
   const name = normalizePersonName(item.name);
   const companionNames = getCompanionNames(item.companions).map(normalizePersonName);
-  const namesText = companionNames.length ? ` + ${companionNames.join(", ")}` : "";
+  const titularLine = `• *${name}* • ${attendeesText} • ${momentText}`;
+  const companionLines = companionNames.map((companionName) => `  ↳ *${companionName}* • acompanhante`);
 
-  return `• *${name}*${namesText} • ${attendeesText} • ${momentText}`;
+  return [titularLine, ...companionLines];
 }
 
 function buildListText(rows) {
@@ -254,8 +255,8 @@ function buildListText(rows) {
     0,
   );
 
-  const confirmedLines = confirmed.map((entry) => formatConfirmationLine(entry));
-  const declinedLines = declined.map((entry) => formatConfirmationLine(entry));
+  const confirmedLines = confirmed.flatMap(formatConfirmationLines);
+  const declinedLines = declined.flatMap(formatConfirmationLines);
 
   const content = [];
 

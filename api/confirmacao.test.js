@@ -76,7 +76,8 @@ test("usa a quantidade corrigida nos totais e na lista do Slack", () => {
   assert.doesNotMatch(slackText, /\*Restaurante:\*/);
   assert.doesNotMatch(slackText, /\*Igreja:\*/);
   assert.match(slackText, /\*Participantes:\* 2 pessoas/);
-  assert.match(slackText, /• \*NATHELLY MONTEIRO\* \+ ALLAN MONTEIRO • 2 pessoas • Igreja \+ Restaurante/);
+  assert.match(slackText, /• \*NATHELLY MONTEIRO\* • 2 pessoas • Igreja \+ Restaurante/);
+  assert.match(slackText, /↳ \*ALLAN MONTEIRO\* • acompanhante/);
 });
 
 test("corrige a contagem de registros antigos com acompanhantes nomeados", () => {
@@ -104,7 +105,8 @@ test("corrige a contagem de registros antigos com acompanhantes nomeados", () =>
     .join("\n");
 
   assert.match(slackText, /\*Pessoas confirmadas\* \(2 pessoas\)/);
-  assert.match(slackText, /• \*NATHELLY MONTEIRO\* \+ ALLAN MONTEIRO • 2 pessoas • Igreja \+ Restaurante/);
+  assert.match(slackText, /• \*NATHELLY MONTEIRO\* • 2 pessoas • Igreja \+ Restaurante/);
+  assert.match(slackText, /↳ \*ALLAN MONTEIRO\* • acompanhante/);
 });
 
 test("salva o titular e os acompanhantes com nomes normalizados", () => {

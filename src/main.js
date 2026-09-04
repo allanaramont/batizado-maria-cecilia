@@ -176,11 +176,11 @@ async function runTypewriter() {
   hero.classList.add('is-typing');
 
   // pausa inicial para a tela respirar antes do eyebrow entrar
-  await sleep(450);
+  await sleep(700);
 
-  // 1) Eyebrow desce de cima (-36px, ~1.4s, com easing dramático)
+  // 1) Eyebrow desce de cima (-80px, 2s)
   hero.classList.add('phase-1');
-  await sleep(1500);
+  await sleep(2050);
 
   // 2) Nome digita rápido (Maria + Cecilia)
   await typeInto(typeName1, 'Maria', 85);

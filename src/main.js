@@ -175,44 +175,45 @@ async function runTypewriter() {
   if (!hero) return;
   hero.classList.add('is-typing');
 
-  // pausa inicial para a tela respirar antes do eyebrow entrar
-  await sleep(700);
+  // pausa inicial curta para a tela respirar
+  await sleep(400);
 
-  // 1) Eyebrow desce de cima (-80px, 2s)
+  // 1) Eyebrow desce de cima (-80px, ~1.4s). Já começamos a digitar
+  //    o nome enquanto ele ainda está deslizando, para dar sensação de fluxo.
   hero.classList.add('phase-1');
-  await sleep(2050);
+  await sleep(750);
 
-  // 2) Nome digita rápido (Maria + Cecilia)
-  await typeInto(typeName1, 'Maria', 85);
-  await sleep(140);
-  await typeInto(typeName2, 'Cecilia', 85);
-  await sleep(280);
+  // 2) Nome digita rápido (Maria + Cecilia) em paralelo ao fim do slide
+  await typeInto(typeName1, 'Maria', 55);
+  await sleep(80);
+  await typeInto(typeName2, 'Cecilia', 55);
+  await sleep(160);
 
   // 3) Lead, data e sub ficam visíveis (digitam em seguida)
   hero.classList.add('phase-3');
-  await sleep(240);
+  await sleep(160);
 
   // 4) Lead digita
   await typeInto(
     typeLead,
     'convidamos você com muito carinho para celebrar esse momento',
-    26
+    18
   );
-  await sleep(220);
+  await sleep(140);
 
   // 5) Data digita em três partes (mantém o "setembro" em italic rosa)
-  await typeInto(typeDatePre, '19 · ', 55);
-  await typeInto(typeDateMonth, 'setembro', 60);
-  await typeInto(typeDatePost, ' · 2026', 55);
-  await sleep(220);
+  await typeInto(typeDatePre, '19 · ', 38);
+  await typeInto(typeDateMonth, 'setembro', 40);
+  await typeInto(typeDatePost, ' · 2026', 38);
+  await sleep(140);
 
   // 6) Sub "às 12h00" digita
-  await typeInto(typeSub, 'às 12h00', 60);
-  await sleep(320);
+  await typeInto(typeSub, 'às 12h00', 40);
+  await sleep(200);
 
   // 7) CTAs e scroll-cue sobem de baixo
   hero.classList.add('phase-4');
-  await sleep(750);
+  await sleep(450);
 
   // cleanup: libera as linhas do título para o reveal padrão
   document

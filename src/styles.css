@@ -1821,8 +1821,8 @@ a {
   transform: translateY(-80px);
   opacity: 0;
   transition:
-    transform 2s cubic-bezier(0.25, 0.1, 0.25, 1),
-    opacity 2s ease-out;
+    transform 1.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+    opacity 1.4s ease-out;
 }
 .hero.phase-1 .eyebrow {
   transform: translateY(0);

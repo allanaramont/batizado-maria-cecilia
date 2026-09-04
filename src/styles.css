@@ -600,28 +600,26 @@ a {
   padding: clamp(120px, 18vh, 180px) 0 clamp(80px, 12vh, 120px);
 }
 
-.hero-ornament {
-  position: absolute;
-  width: clamp(280px, 38vw, 420px);
-  aspect-ratio: 1;
-  top: 18%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.9;
-  animation: float 7s ease-in-out infinite;
-  z-index: 0;
+.hero-dove {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: -6px 0;
   pointer-events: none;
-  overflow: visible;
+  opacity: 0.92;
+}
+
+.hero-dove svg {
+  width: clamp(72px, 9vw, 110px);
+  height: auto;
+  display: block;
+  animation: float-and-bob 7s ease-in-out infinite;
 }
 
 .dove-wings {
   transform-origin: 50% 100%;
   transform-box: fill-box;
   animation: wing-flap 1.6s ease-in-out infinite;
-}
-
-.hero-ornament {
-  animation: float-and-bob 7s ease-in-out infinite;
 }
 
 @keyframes float-and-bob {
@@ -1819,13 +1817,13 @@ a {
   will-change: transform, opacity;
 }
 
-/* estado inicial (antes de qualquer fase) */
+/* estado inicial (antes de qualquer fase) — valores sutis */
 .eyebrow {
-  transform: translateY(-26px);
+  transform: translateY(-16px);
   opacity: 0;
   transition:
-    transform 0.9s var(--ease-out),
-    opacity 0.9s var(--ease-out);
+    transform 1s var(--ease-out),
+    opacity 1s var(--ease-out);
 }
 .hero.phase-1 .eyebrow {
   transform: translateY(0);
@@ -1835,11 +1833,11 @@ a {
 .hero-lead,
 .hero-sub,
 .hero-meta {
-  transform: translateY(10px);
+  transform: translateY(6px);
   opacity: 0;
   transition:
-    transform 0.7s var(--ease-out),
-    opacity 0.7s var(--ease-out);
+    transform 0.55s var(--ease-out),
+    opacity 0.55s var(--ease-out);
 }
 .hero.phase-3 .hero-lead,
 .hero.phase-3 .hero-sub,
@@ -1850,11 +1848,11 @@ a {
 
 .hero-cta,
 .scroll-cue {
-  transform: translateY(24px);
+  transform: translateY(16px);
   opacity: 0;
   transition:
-    transform 0.9s var(--ease-out),
-    opacity 0.9s var(--ease-out);
+    transform 0.7s var(--ease-out),
+    opacity 0.7s var(--ease-out);
 }
 .hero.phase-4 .hero-cta,
 .hero.phase-4 .scroll-cue {

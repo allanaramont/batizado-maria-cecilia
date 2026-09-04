@@ -101,98 +101,58 @@
     <main class="page">
       <!-- HERO -->
       <section class="hero" id="inicio">
-        <div class="hero-ornament" aria-hidden="true">
-          <svg viewBox="0 0 240 240" width="100%" height="100%">
-            <defs>
-              <radialGradient id="doveGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="rgb(212, 133, 154)" stop-opacity="0.28" />
-                <stop offset="55%" stop-color="rgb(212, 133, 154)" stop-opacity="0.1" />
-                <stop offset="100%" stop-color="rgb(212, 133, 154)" stop-opacity="0" />
-              </radialGradient>
-              <linearGradient id="doveStroke" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="rgb(184, 90, 110)" stop-opacity="0.95" />
-                <stop offset="100%" stop-color="rgb(184, 90, 110)" stop-opacity="0.6" />
-              </linearGradient>
-              <linearGradient id="doveFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="rgb(212, 133, 154)" stop-opacity="0.95" />
-                <stop offset="100%" stop-color="rgb(184, 90, 110)" stop-opacity="0.78" />
-              </linearGradient>
-            </defs>
-
-            <!-- Aura radiante -->
-            <circle cx="120" cy="120" r="118" fill="url(#doveGlow)" />
-            <circle cx="120" cy="120" r="96" fill="none" stroke="rgb(184, 90, 110)" stroke-width="0.4" stroke-dasharray="1.5 6" opacity="0.5" />
-
-            <!-- Pomba do Espírito Santo — silhueta editorial em vôo -->
-            <g transform="translate(120 124)">
-              <g class="dove-wings">
-                <!-- Asas abertas (curva fluida, simétrica) -->
-                <path
-                  d="M 0 6
-                     C -22 -22, -60 -44, -100 -36
-                     C -108 -14, -76 6, -34 8
-                     C -20 8, -8 8, 0 6 Z"
-                  fill="url(#doveFill)"
-                />
-                <path
-                  d="M 0 6
-                     C 22 -22, 60 -44, 100 -36
-                     C 108 -14, 76 6, 34 8
-                     C 20 8, 8 8, 0 6 Z"
-                  fill="url(#doveFill)"
-                />
-
-                <!-- Detalhe das penas (linha suave na borda interna das asas) -->
-                <path
-                  d="M -10 0 C -34 -12, -64 -28, -86 -30"
-                  fill="none" stroke="rgb(184, 90, 110)" stroke-width="0.7" stroke-linecap="round" opacity="0.6"
-                />
-                <path
-                  d="M 10 0 C 34 -12, 64 -28, 86 -30"
-                  fill="none" stroke="rgb(184, 90, 110)" stroke-width="0.7" stroke-linecap="round" opacity="0.6"
-                />
-              </g>
-
-              <!-- Corpo (gota/coração pequeno) -->
-              <path
-                d="M 0 -2
-                   C -8 6, -8 20, 0 28
-                   C 8 20, 8 6, 0 -2 Z"
-                fill="url(#doveFill)"
-              />
-
-              <!-- Cabeça -->
-              <circle cx="0" cy="-12" r="5.5" fill="url(#doveFill)" />
-
-              <!-- Bico (pequeno triângulo) -->
-              <path d="M 0 -16 L 2.5 -20 L -2.5 -20 Z" fill="rgb(184, 90, 110)" />
-            </g>
-
-            <!-- Raios de luz ao redor da pomba -->
-            <g opacity="0.4" stroke="rgb(184, 90, 110)" stroke-width="0.5" stroke-linecap="round">
-              <line x1="120" y1="14" x2="120" y2="26" />
-              <line x1="50" y1="50" x2="40" y2="40" />
-              <line x1="190" y1="50" x2="200" y2="40" />
-              <line x1="20" y1="120" x2="8" y2="120" />
-              <line x1="220" y1="120" x2="232" y2="120" />
-              <line x1="50" y1="190" x2="40" y2="200" />
-              <line x1="190" y1="190" x2="200" y2="200" />
-            </g>
-          </svg>
-        </div>
-
         <p class="eyebrow" id="typeEyebrow">Convite de batismo</p>
 
         <h1 class="display">
           <span class="display-line"><span id="typeName1"></span></span>
+
+          <div class="hero-dove" aria-hidden="true">
+            <svg viewBox="0 0 240 240">
+              <defs>
+                <linearGradient id="doveFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgb(212, 133, 154)" stop-opacity="0.95" />
+                  <stop offset="100%" stop-color="rgb(184, 90, 110)" stop-opacity="0.78" />
+                </linearGradient>
+              </defs>
+              <g transform="translate(120 124)">
+                <g class="dove-wings">
+                  <path
+                    d="M 0 6 C -22 -22, -60 -44, -100 -36 C -108 -14, -76 6, -34 8 C -20 8, -8 8, 0 6 Z"
+                    fill="url(#doveFill)"
+                  />
+                  <path
+                    d="M 0 6 C 22 -22, 60 -44, 100 -36 C 108 -14, 76 6, 34 8 C 20 8, 8 8, 0 6 Z"
+                    fill="url(#doveFill)"
+                  />
+                  <path
+                    d="M -10 0 C -34 -12, -64 -28, -86 -30"
+                    fill="none" stroke="rgb(184, 90, 110)" stroke-width="0.7" stroke-linecap="round" opacity="0.6"
+                  />
+                  <path
+                    d="M 10 0 C 34 -12, 64 -28, 86 -30"
+                    fill="none" stroke="rgb(184, 90, 110)" stroke-width="0.7" stroke-linecap="round" opacity="0.6"
+                  />
+                </g>
+                <path
+                  d="M 0 -2 C -8 6, -8 20, 0 28 C 8 20, 8 6, 0 -2 Z"
+                  fill="url(#doveFill)"
+                />
+                <circle cx="0" cy="-12" r="5.5" fill="url(#doveFill)" />
+                <path d="M 0 -16 L 2.5 -20 L -2.5 -20 Z" fill="rgb(184, 90, 110)" />
+              </g>
+            </svg>
+          </div>
+
           <span class="display-line italic"><span id="typeName2"></span></span>
         </h1>
 
         <p class="hero-lead" id="typeLead" aria-label="convidamos você com muito carinho para celebrar esse momento"></p>
 
-        <div class="hero-meta" id="typeDate" data-date-anim>
+        <div class="hero-meta">
           <span class="hero-divider" aria-hidden="true"></span>
-          <p class="hero-date">19 <span class="hero-dot">·</span> <em class="hero-date-month">setembro</em> <span class="hero-dot">·</span> 2026</p>
+          <p class="hero-date">
+            <span id="typeDatePre"></span><em class="hero-date-month" id="typeDateMonth"></em><span id="typeDatePost"></span>
+          </p>
           <span class="hero-divider" aria-hidden="true"></span>
         </div>
 

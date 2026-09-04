@@ -154,7 +154,9 @@ const typeEyebrow = document.getElementById('typeEyebrow');
 const typeName1 = document.getElementById('typeName1');
 const typeName2 = document.getElementById('typeName2');
 const typeLead = document.getElementById('typeLead');
-const typeDate = document.getElementById('typeDate');
+const typeDatePre = document.getElementById('typeDatePre');
+const typeDateMonth = document.getElementById('typeDateMonth');
+const typeDatePost = document.getElementById('typeDatePost');
 const typeSub = document.getElementById('typeSub');
 const heroCta = document.querySelector('.hero-cta');
 const scrollCue = document.querySelector('.scroll-cue');
@@ -171,43 +173,46 @@ async function typeInto(el, text, speed = 55) {
 
 async function runTypewriter() {
   if (!hero) return;
-  // marca o hero como "em digitação" — mantém h1 e eyebrow visíveis
-  // (sem isso, o reveal base esconde o texto durante a digitação)
   hero.classList.add('is-typing');
 
-  // 1) Eyebrow desce de cima (sem digitar)
-  await sleep(220);
-  hero.classList.add('phase-1');
-  await sleep(900);
-
-  // 2) Nome digita (Maria + Cecilia)
-  await typeInto(typeName1, 'Maria', 130);
+  // 1) Eyebrow desce de cima (sutis 16px, ~1s)
   await sleep(180);
-  await typeInto(typeName2, 'Cecilia', 130);
-  await sleep(380);
+  hero.classList.add('phase-1');
+  await sleep(1000);
 
-  // 3) Lead digita
+  // 2) Nome digita rápido (Maria + Cecilia)
+  await typeInto(typeName1, 'Maria', 85);
+  await sleep(120);
+  await typeInto(typeName2, 'Cecilia', 85);
+  await sleep(280);
+
+  // 3) Lead, data e sub ficam visíveis (digitam em seguida)
+  hero.classList.add('phase-3');
+  await sleep(220);
+
+  // 4) Lead digita
   await typeInto(
     typeLead,
     'convidamos você com muito carinho para celebrar esse momento',
-    32
+    26
   );
-  await sleep(280);
+  await sleep(220);
 
-  // 4) Data aparece em fade
-  hero.classList.add('phase-3');
-  await sleep(620);
+  // 5) Data digita em três partes (mantém o "setembro" em italic rosa)
+  await typeInto(typeDatePre, '19 · ', 55);
+  await typeInto(typeDateMonth, 'setembro', 60);
+  await typeInto(typeDatePost, ' · 2026', 55);
+  await sleep(220);
 
-  // 5) Sub "às 12h00" digita
-  await typeInto(typeSub, 'às 12h00', 70);
-  await sleep(380);
+  // 6) Sub "às 12h00" digita
+  await typeInto(typeSub, 'às 12h00', 60);
+  await sleep(320);
 
-  // 6) CTAs e scroll-cue sobem de baixo
+  // 7) CTAs e scroll-cue sobem de baixo
   hero.classList.add('phase-4');
-  await sleep(900);
+  await sleep(700);
 
   // cleanup: libera as linhas do título para o reveal padrão
-  // (mantém is-typing + phase-1/3/4 para o estado final ficar visível)
   document
     .querySelectorAll('.hero .display-line')
     .forEach((el) => el.classList.add('is-visible'));

@@ -1700,9 +1700,25 @@ a {
   will-change: opacity, transform;
 }
 
+[data-reveal="up"] {
+  transform: translateY(-28px);
+}
+
+[data-reveal="left"] {
+  transform: translateX(-32px);
+}
+
+[data-reveal="right"] {
+  transform: translateX(32px);
+}
+
+[data-reveal="fade"] {
+  transform: none;
+}
+
 [data-reveal].is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate(0, 0);
 }
 
 /* text split — each word starts hidden below */

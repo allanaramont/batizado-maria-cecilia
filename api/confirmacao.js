@@ -63,6 +63,16 @@ function sanitizeText(value) {
   return value.trim().slice(0, 500);
 }
 
+function normalizePersonName(value) {
+  return sanitizeText(value).replace(/\s+/g, " ").toLocaleUpperCase("pt-BR");
+}
+
+function normalizePersonKey(value) {
+  return normalizePersonName(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function normalizeMoment(rawMoment) {
   if (typeof rawMoment !== "string") {
     return "";
@@ -102,12 +112,22 @@ function formatPeopleCount(value) {
   return `${value} pessoa${value === 1 ? "" : "s"}`;
 }
 
-function normalizePeople(value) {
-  const parsed = Number.parseInt(value, 10);
-  if (Number.isNaN(parsed) || parsed < 1) {
-    return 1;
+function getCompanionNames(value) {
+  if (typeof value !== "string") {
+    return [];
   }
-  return parsed;
+
+  return value
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+}
+
+function normalizeCompanions(value) {
+  return getCompanionNames(value)
+    .map(normalizePersonName)
+    .filter(Boolean)
+    .join(", ");
 }
 
 function chunkText(rawText, chunkLength = 2800) {
@@ -143,12 +163,50 @@ function chunkText(rawText, chunkLength = 2800) {
   return parts;
 }
 
-function sanitizeInt(value) {
-  const parsed = Number.parseInt(value, 10);
-  if (Number.isNaN(parsed)) {
-    return 1;
-  }
-  return Math.max(1, parsed);
+function countNamedCompanions(value) {
+  return getCompanionNames(value).length;
+}
+
+function normalizeAttendees(rawValue, companions) {
+  const parsed = Number.parseInt(rawValue, 10);
+  const storedPeople = !Number.isNaN(parsed) && parsed > 0 ? parsed : 1;
+  const namedPeople = countNamedCompanions(companions) + 1;
+
+  return Math.max(storedPeople, namedPeople);
+}
+
+function getEntryPeopleCount(entry) {
+  return normalizeAttendees(entry.attendees, entry.companions);
+}
+
+function getEntryNames(entry) {
+  return [entry.name, ...getCompanionNames(entry.companions)]
+    .map(normalizePersonName)
+    .filter(Boolean);
+}
+
+function findDuplicateNames(candidate, existingRows) {
+  const existingKeys = new Set(
+    existingRows.flatMap(getEntryNames).map(normalizePersonKey),
+  );
+  const submittedKeys = new Set();
+  const duplicateKeys = new Set();
+  const duplicates = [];
+
+  getEntryNames(candidate).forEach((name) => {
+    const key = normalizePersonKey(name);
+    if ((existingKeys.has(key) || submittedKeys.has(key)) && !duplicateKeys.has(key)) {
+      duplicates.push(name);
+      duplicateKeys.add(key);
+    }
+    submittedKeys.add(key);
+  });
+
+  return duplicates;
+}
+
+function buildDuplicateError(duplicateNames) {
+  return `Já existe uma confirmação para: ${duplicateNames.join(", ")}. Confira os nomes e tente novamente.`;
 }
 
 function parseWillAttend(value) {
@@ -173,33 +231,37 @@ function parseWillAttend(value) {
   return Boolean(value);
 }
 
-function formatConfirmationLine(item) {
-  const people = normalizePeople(item.attendees);
+function formatConfirmationLines(item) {
+  const people = getEntryPeopleCount(item);
   const attendeesText = formatPeopleCount(people);
   const momentText = item.will_attend ? buildListForMoment(item.moment || "") : "-";
+  const name = normalizePersonName(item.name);
+  const companionNames = getCompanionNames(item.companions).map(normalizePersonName);
+  const titularLine = `• *${name}* • ${attendeesText} • ${momentText}`;
+  const companionLines = companionNames.map((companionName) => `  ↳ *${companionName}* • acompanhante`);
 
-  return `• *${item.name}* • ${attendeesText} • ${momentText}`;
+  return [titularLine, ...companionLines];
 }
 
 function buildListText(rows) {
   const confirmed = rows.filter((entry) => entry.will_attend);
   const declined = rows.filter((entry) => !entry.will_attend);
   const confirmedPeople = confirmed.reduce(
-    (acc, entry) => acc + normalizePeople(entry.attendees),
+    (acc, entry) => acc + getEntryPeopleCount(entry),
     0,
   );
   const declinedPeople = declined.reduce(
-    (acc, entry) => acc + normalizePeople(entry.attendees),
+    (acc, entry) => acc + getEntryPeopleCount(entry),
     0,
   );
 
-  const confirmedLines = confirmed.map((entry) => formatConfirmationLine(entry));
-  const declinedLines = declined.map((entry) => formatConfirmationLine(entry));
+  const confirmedLines = confirmed.flatMap(formatConfirmationLines);
+  const declinedLines = declined.flatMap(formatConfirmationLines);
 
   const content = [];
 
   if (confirmedLines.length) {
-    content.push(`*Presentes* (${confirmedPeople} pessoa${confirmedPeople === 1 ? "" : "s"})`);
+    content.push(`*Pessoas confirmadas* (${confirmedPeople} pessoa${confirmedPeople === 1 ? "" : "s"})`);
     content.push(...confirmedLines);
   }
 
@@ -221,7 +283,7 @@ function countTotals(rows) {
     if (!entry.will_attend) {
       return acc;
     }
-    const people = normalizePeople(entry.attendees);
+    const people = getEntryPeopleCount(entry);
     if (entry.moment === "igreja" || entry.moment === "ambos") {
       return acc + people;
     }
@@ -232,7 +294,7 @@ function countTotals(rows) {
     if (!entry.will_attend) {
       return acc;
     }
-    const people = normalizePeople(entry.attendees);
+    const people = getEntryPeopleCount(entry);
     if (entry.moment === "restaurante" || entry.moment === "ambos") {
       return acc + people;
     }
@@ -241,10 +303,10 @@ function countTotals(rows) {
 
   const yes = rows
     .filter((entry) => entry.will_attend)
-    .reduce((acc, entry) => acc + normalizePeople(entry.attendees), 0);
+    .reduce((acc, entry) => acc + getEntryPeopleCount(entry), 0);
   const no = rows
     .filter((entry) => !entry.will_attend)
-    .reduce((acc, entry) => acc + normalizePeople(entry.attendees), 0);
+    .reduce((acc, entry) => acc + getEntryPeopleCount(entry), 0);
 
   return {
     yes,
@@ -260,13 +322,9 @@ function buildBlocksForPayload(payload, rows) {
   const totals = countTotals(rows);
 
   const summaryText = [
-    `*Respostas:* ${totals.total}`,
-    `*Presentes:* ${formatPeopleCount(totals.yes)}`,
+    `*Total de respostas:* ${totals.total}`,
+    `*Total de pessoas confirmadas:* ${formatPeopleCount(totals.yes)}`,
     `*Não comparecerão:* ${formatPeopleCount(totals.no)}`,
-    `*Total igreja:* ${formatPeopleCount(totals.peopleAtChurch)}`,
-    `*Total restaurante:* ${formatPeopleCount(totals.peopleAtRestaurant)}`,
-    `*Restaurante:* ${RESTAURANT_NAME} (${RESTAURANT_TIME})`,
-    `*Igreja:* ${CHURCH_NAME} (${CHURCH_TIME})`,
   ].join("\n");
 
   const rowsText = buildListText(rows);
@@ -395,11 +453,11 @@ function isMongoConfigured() {
 }
 
 function normalizePayload(raw) {
-  const name = sanitizeText(raw.name);
+  const name = normalizePersonName(raw.name);
   const willAttend = parseWillAttend(raw.willAttend);
-  const attendees = willAttend ? sanitizeInt(raw.attendees) : 1;
   const moment = willAttend ? normalizeMoment(raw.attendanceMode || raw.moment || "") : "";
-  const companions = sanitizeText(raw.companions);
+  const companions = normalizeCompanions(raw.companions);
+  const attendees = willAttend ? normalizeAttendees(raw.attendees, companions) : 1;
   const note = sanitizeText(raw.note);
 
   return {
@@ -425,7 +483,7 @@ function buildMessageBlocks(entry, allEntries) {
     ? "Confirmou presença"
     : "Não poderá comparecer";
   const selectedMomentLabel = entry.willAttend ? buildListForMoment(entry.moment) : "-";
-  const peopleCount = normalizePeople(entry.attendees);
+  const peopleCount = getEntryPeopleCount(entry);
 
   return {
     text: "Nova confirmação - Batizado da Maria Cecilia",
@@ -511,6 +569,13 @@ async function getAllConfirmations() {
   }
 }
 
+export {
+  buildDuplicateError,
+  buildMessageBlocks,
+  findDuplicateNames,
+  normalizePayload,
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -536,6 +601,24 @@ export default async function handler(req, res) {
       return res.status(400).json({
         error: "Selecione de quais momentos você participará.",
       });
+    }
+
+    if (isMongoConfigured()) {
+      const existingEntriesResult = await getAllConfirmations();
+      if (!existingEntriesResult.success) {
+        console.error("[confirmacao] não foi possível validar duplicidade:", existingEntriesResult.reason);
+        return res.status(503).json({
+          error: "Não foi possível validar sua confirmação agora. Tente novamente em alguns instantes.",
+        });
+      }
+
+      const duplicateNames = findDuplicateNames(data, existingEntriesResult.data);
+      if (duplicateNames.length) {
+        return res.status(409).json({
+          error: buildDuplicateError(duplicateNames),
+          duplicateNames,
+        });
+      }
     }
 
     // Sem MongoDB configurado: a confirmação é registrada nos logs do Vercel
@@ -604,10 +687,8 @@ export default async function handler(req, res) {
           at: new Date().toISOString(),
         }),
       );
-      return res.status(200).json({
-        success: true,
-        message: "Confirmação recebida.",
-        stored: "log",
+      return res.status(503).json({
+        error: "Não foi possível salvar sua confirmação agora. Tente novamente em alguns instantes.",
       });
     }
 

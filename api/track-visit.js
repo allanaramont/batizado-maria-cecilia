@@ -19,13 +19,23 @@ function readHeader(req, name) {
   return req.headers[name];
 }
 
+function normalizeLocationPart(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  try {
+    return decodeURIComponent(value).trim();
+  } catch {
+    return value.trim();
+  }
+}
+
 function getLocation(req) {
   const city = readHeader(req, "x-vercel-ip-city");
   const region = readHeader(req, "x-vercel-ip-country-region");
   const country = readHeader(req, "x-vercel-ip-country");
-  const parts = [city, region, country].filter(
-    (v) => typeof v === "string" && v.trim().length > 0
-  );
+  const parts = [city, region, country].map(normalizeLocationPart).filter(Boolean);
   return parts.length > 0 ? parts.join(", ") : "Localizacao indisponivel";
 }
 
@@ -44,6 +54,15 @@ function formatTimestamp(d = new Date()) {
     timeStyle: "short",
     timeZone: "America/Sao_Paulo",
   }).format(d);
+}
+
+function buildVisitMessage(path, location, timestamp) {
+  return [
+    "🕊️ *Nova visita ao Batizado*",
+    `📍 *Local:* ${location}`,
+    `🕒 *Data e hora:* ${timestamp}`,
+    `🔗 *Página:* \`${path}\``,
+  ].join("\n");
 }
 
 async function sendToSlack(text) {
@@ -88,7 +107,7 @@ export default async function handler(req, res) {
     const location = getLocation(req);
     const path = getPath(req);
     const timestamp = formatTimestamp();
-    const text = `🕊️ Visita: \`${path}\` — ${location} — ${timestamp}`;
+    const text = buildVisitMessage(path, location, timestamp);
 
     if (!slackBotToken && !slackWebhookUrl) {
       // sem slack configurado: loga no console do Vercel (painel > Functions > Logs)
@@ -108,3 +127,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: message });
   }
 }
+
+export { buildVisitMessage, getLocation };

@@ -48,6 +48,8 @@
       <div class="cursor-ring"></div>
     </div>
 
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" hidden></div>
+
     <main class="page">
       <!-- HERO -->
       <section class="hero" id="inicio">
@@ -343,7 +345,8 @@
             <form id="confirmationForm" class="wizard-form" novalidate>
               <!-- step 2: dados -->
               <div class="wizard-panel" data-panel="2" hidden>
-                <p class="wizard-question">Conte-nos sobre você</p>
+                <p class="wizard-question" id="detailsQuestion">Conte-nos sobre você</p>
+                <p class="wizard-decline-message" id="declineMessage" hidden></p>
                 <div class="field">
                   <label for="name">Nome completo</label>
                   <input
@@ -358,8 +361,9 @@
                   <span class="field-hint" id="nameHint">Informe nome e sobrenome para sabermos quem é você.</span>
                 </div>
 
-                <div class="field">
-                  <span class="field-label">Como você quer registrar quem vem com você? <em>(opcional)</em></span>
+                <div id="companionFields">
+                  <div class="field">
+                    <span class="field-label">Como você quer registrar quem vem com você? <em>(opcional)</em></span>
                   <div class="companion-toggle">
                     <button
                       class="btn-magnetic btn-ghost"
@@ -388,34 +392,35 @@
                       </span>
                     </button>
                   </div>
-                </div>
+                  </div>
 
-                <div class="companion-area" data-companion-area="count" hidden>
-                  <div class="field">
-                    <span class="field-label">Quantas pessoas, contando com você?</span>
-                    <div class="counter">
-                      <button id="decrease" type="button" aria-label="Diminuir">−</button>
-                      <input
-                        id="attendees"
-                        name="attendees"
-                        type="text"
-                        readonly
-                        value="1"
-                        aria-live="polite"
-                      />
-                      <button id="increase" type="button" aria-label="Aumentar">+</button>
+                  <div class="companion-area" data-companion-area="count" hidden>
+                    <div class="field">
+                      <span class="field-label">Quantas pessoas, contando com você?</span>
+                      <div class="counter">
+                        <button id="decrease" type="button" aria-label="Diminuir">−</button>
+                        <input
+                          id="attendees"
+                          name="attendees"
+                          type="text"
+                          readonly
+                          value="1"
+                          aria-live="polite"
+                        />
+                        <button id="increase" type="button" aria-label="Aumentar">+</button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="companion-area" data-companion-area="names" hidden>
-                  <div class="field">
-                    <span class="field-label">Quem mais vai com você?</span>
-                    <div class="companion-list" id="companionList"></div>
-                    <button class="btn-mini btn-ghost" type="button" id="addCompanion" data-cursor="hover">
-                      <span class="ic-plus" aria-hidden="true">+</span>
-                      <span>Adicionar acompanhante</span>
-                    </button>
+                  <div class="companion-area" data-companion-area="names" hidden>
+                    <div class="field">
+                      <span class="field-label">Quem mais vai com você?</span>
+                      <div class="companion-list" id="companionList"></div>
+                      <button class="btn-mini btn-ghost" type="button" id="addCompanion" data-cursor="hover">
+                        <span class="ic-plus" aria-hidden="true">+</span>
+                        <span>Adicionar acompanhante</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -426,7 +431,7 @@
                   <button class="btn-magnetic btn-primary" type="button" data-next data-cursor="hover">
                     <span class="btn-bg" aria-hidden="true"></span>
             <span class="btn-shine" aria-hidden="true"></span>
-                    <span class="btn-text">Continuar</span>
+                    <span class="btn-text" id="continueLabel">Continuar</span>
                   </button>
                 </div>
               </div>
@@ -490,14 +495,14 @@
 
               <!-- step 4: revisão + submit -->
               <div class="wizard-panel" data-panel="4" hidden>
-                <p class="wizard-question">Confirme os dados</p>
+                <p class="wizard-question" id="reviewQuestion">Confirme os dados</p>
                 <ul class="review" aria-live="polite">
                   <li><span class="r-label">Nome</span><span class="r-val" data-r="name">—</span></li>
-                  <li>
+                  <li data-decline-field>
                     <span class="r-label">Vai com você</span>
                     <span class="r-val" data-r="attendees">—</span>
                   </li>
-                  <li>
+                  <li data-decline-field>
                     <span class="r-label">Momentos</span>
                     <span class="r-val" data-r="moment">—</span>
                   </li>
@@ -510,7 +515,7 @@
                   <button class="btn-magnetic btn-primary" type="submit" data-cursor="hover">
                     <span class="btn-bg" aria-hidden="true"></span>
             <span class="btn-shine" aria-hidden="true"></span>
-                    <span class="btn-text" data-submit-label>Enviar confirmação</span>
+                    <span class="btn-text" id="submitLabel" data-submit-label>Enviar confirmação</span>
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="btn-icon">
                       <path
                         d="M5 12h14M13 5l7 7-7 7"
@@ -632,6 +637,57 @@
                       <circle cx="65" cy="73" r="2" fill="rgb(255, 248, 244)" />
                     </svg>
                   </div>
+
+                  <!-- Etapas para quem não poderá estar presente -->
+                  <div class="loading-step" data-step="decline">
+                    <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="illDecline" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="rgb(184, 90, 110)" stop-opacity="0.82" />
+                          <stop offset="100%" stop-color="rgb(145, 79, 96)" stop-opacity="0.66" />
+                        </linearGradient>
+                      </defs>
+                      <!-- coração partido -->
+                      <path d="M60 99 C35 82 17 64 17 43 C17 27 31 18 44 23 C52 26 57 33 60 40 C63 33 68 26 76 23 C89 18 103 27 103 43 C103 64 85 82 60 99Z" fill="none" stroke="url(#illDecline)" stroke-width="4" stroke-linejoin="round" />
+                      <path d="M61 28 L53 49 L64 57 L56 76" fill="none" stroke="rgb(255, 248, 244)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                      <!-- lágrima -->
+                      <path d="M91 73 C86 80 84 84 84 88 C84 93 88 96 92 96 C97 96 100 93 100 88 C100 84 96 80 91 73Z" fill="url(#illDecline)" opacity="0.72" />
+                    </svg>
+                  </div>
+
+                  <div class="loading-step" data-step="declineFamily">
+                    <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="illDeclineFamily" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="rgb(212, 133, 154)" stop-opacity="0.76" />
+                          <stop offset="100%" stop-color="rgb(145, 79, 96)" stop-opacity="0.64" />
+                        </linearGradient>
+                      </defs>
+                      <!-- família com expressão saudosa -->
+                      <circle cx="43" cy="45" r="14" fill="url(#illDeclineFamily)" />
+                      <circle cx="77" cy="45" r="14" fill="url(#illDeclineFamily)" />
+                      <path d="M24 97 C24 72 62 69 62 97" fill="url(#illDeclineFamily)" />
+                      <path d="M58 97 C58 72 96 69 96 97" fill="url(#illDeclineFamily)" />
+                      <path d="M36 50 Q43 44 50 50 M70 50 Q77 44 84 50" fill="none" stroke="rgb(255, 248, 244)" stroke-width="2" stroke-linecap="round" />
+                      <circle cx="38" cy="41" r="2" fill="rgb(255, 248, 244)" opacity="0.8" />
+                      <circle cx="72" cy="41" r="2" fill="rgb(255, 248, 244)" opacity="0.8" />
+                    </svg>
+                  </div>
+
+                  <div class="loading-step" data-step="declineCare">
+                    <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="illDeclineCare" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="rgb(212, 133, 154)" stop-opacity="0.78" />
+                          <stop offset="100%" stop-color="rgb(145, 79, 96)" stop-opacity="0.64" />
+                        </linearGradient>
+                      </defs>
+                      <!-- carinho enviado de longe -->
+                      <rect x="18" y="39" width="84" height="58" rx="5" fill="none" stroke="url(#illDeclineCare)" stroke-width="3" />
+                      <path d="M19 43 L60 75 L101 43" fill="none" stroke="url(#illDeclineCare)" stroke-width="3" stroke-linejoin="round" />
+                      <path d="M60 39 C54 27 39 31 39 43 C39 54 60 65 60 65 C60 65 81 54 81 43 C81 31 66 27 60 39Z" fill="none" stroke="url(#illDeclineCare)" stroke-width="3" />
+                    </svg>
+                  </div>
                 </div>
 
                 <h3 class="loading-step-title" id="loadingStepTitle">Enviando confirmação</h3>
@@ -644,7 +700,7 @@
                   <span class="dot"></span>
                 </div>
 
-                <p class="loading-hint">A confirmação está sendo enviada com segurança</p>
+                <p class="loading-hint" id="loadingHint">A confirmação está sendo enviada com segurança</p>
               </div>
 
               <!-- card final com foto + checkmark + mensagem (mostrado após a animação terminar) -->

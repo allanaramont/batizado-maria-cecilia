@@ -10,9 +10,6 @@ const VISIT_API_ENDPOINT = '/api/track-visit';
 
 const EVENT_DATETIME = new Date('2026-09-19T12:00:00-03:00');
 
-const SUCCESS_MESSAGE_NAO =
-  'Obrigado pelo retorno. Nathelly e Allan vão receber seu carinho no dia.';
-
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
@@ -353,6 +350,9 @@ const loadingIllustration = document.getElementById('loadingIllustration');
 const loadingStepTitle = document.getElementById('loadingStepTitle');
 const loadingStepDesc = document.getElementById('loadingStepDesc');
 const loadingDots = document.getElementById('loadingDots');
+const loadingHint = document.getElementById('loadingHint');
+const toast = document.getElementById('toast');
+const LOADING_STEP_DURATION_MS = 2000;
 
 // textos de cada etapa (titulo + descricao)
 const LOADING_STEP_DEFINITIONS = {
@@ -375,6 +375,18 @@ const LOADING_STEP_DEFINITIONS = {
   family: {
     getTitle: () => 'A família tá emocionada',
     getDescription: () => 'Allan, Nathelly e a Rubi já tão sabendo',
+  },
+  decline: {
+    getTitle: ({ firstName }) => (firstName ? `Que pena, ${firstName}` : 'Que pena'),
+    getDescription: () => 'Vamos sentir sua falta nesse dia',
+  },
+  declineFamily: {
+    getTitle: () => 'A família vai sentir sua falta',
+    getDescription: () => 'Mas agradece por você ter avisado',
+  },
+  declineCare: {
+    getTitle: () => 'Seu carinho estará presente',
+    getDescription: () => 'Mesmo de longe, você estará em nossos pensamentos',
   },
 };
 
@@ -400,6 +412,13 @@ const buildSuccessMessage = (payload) => {
     : 'Que alegria ter você conosco! Será uma bênção compartilhar esse momento tão especial da vida da Maria Cecilia com você.';
 };
 
+const buildDeclineMessage = (payload) => {
+  const firstName = getFirstName(payload.name);
+  return firstName
+    ? `Que pena, ${firstName}! Vamos sentir sua falta nesse dia. Obrigado por nos avisar — seu carinho estará presente com a Maria Cecilia.`
+    : 'Que pena que você não poderá estar conosco. Obrigado por nos avisar — seu carinho estará presente com a Maria Cecilia.';
+};
+
 // roda o carrossel de loading em loop enquanto a API nao responde.
 // Quando a flag stop vira true, a animacao para e o card final aparece.
 let loadingLoopRunning = false;
@@ -414,12 +433,15 @@ const runLoadingAnimation = async (payload, stopPromise) => {
       stepKeys.push('restaurant');
     }
     stepKeys.push('notify');
+    stepKeys.push('family');
+  } else {
+    stepKeys.push('decline', 'declineFamily', 'declineCare');
   }
-  stepKeys.push('family');
 
   // pluralizacao baseada na quantidade ou nos nomes informados
   const peopleCount = getPeopleCount(payload);
   const isPlural = peopleCount > 1;
+  const firstName = getFirstName(payload.name);
 
   // monta dots conforme a quantidade de etapas
   if (loadingDots) {
@@ -437,6 +459,12 @@ const runLoadingAnimation = async (payload, stopPromise) => {
   // estado: mostra o loading, esconde o final
   if (wizardLoading) wizardLoading.hidden = false;
   if (successFinal) successFinal.hidden = true;
+  if (loadingHint) {
+    loadingHint.textContent =
+      payload.willAttend === 'sim'
+        ? 'A confirmação está sendo enviada com segurança'
+        : 'Registrando seu carinho com todo cuidado';
+  }
 
   // loop principal: se a API responder cedo, termina o primeiro ciclo antes
   // de revelar o sucesso; se demorar, continua ciclando ate ela responder.
@@ -454,8 +482,8 @@ const runLoadingAnimation = async (payload, stopPromise) => {
     const definition = LOADING_STEP_DEFINITIONS[key];
     const def = definition
       ? {
-          title: definition.getTitle({ isPlural, peopleCount }),
-          desc: definition.getDescription({ isPlural, peopleCount }),
+          title: definition.getTitle({ isPlural, peopleCount, firstName }),
+          desc: definition.getDescription({ isPlural, peopleCount, firstName }),
         }
       : null;
     if (!def) return;
@@ -480,7 +508,7 @@ const runLoadingAnimation = async (payload, stopPromise) => {
   setStep(0);
 
   while (loadingLoopRunning) {
-    const waitForNextStep = sleep(1300).then(() => 'step');
+    const waitForNextStep = sleep(LOADING_STEP_DURATION_MS).then(() => 'step');
     const event = await Promise.race(
       requestCompleted ? [waitForNextStep] : [waitForNextStep, requestCompletion]
     );
@@ -504,6 +532,13 @@ const stopLoadingAnimation = () => {
 const wpItems = document.querySelectorAll('.wp-item');
 
 const nameInput = document.getElementById('name');
+const nameHint = document.getElementById('nameHint');
+const detailsQuestion = document.getElementById('detailsQuestion');
+const declineMessage = document.getElementById('declineMessage');
+const companionFields = document.getElementById('companionFields');
+const continueLabel = document.getElementById('continueLabel');
+const reviewQuestion = document.getElementById('reviewQuestion');
+const submitLabel = document.getElementById('submitLabel');
 const attendeesInput = document.getElementById('attendees');
 const decreaseBtn = document.getElementById('decrease');
 const increaseBtn = document.getElementById('increase');
@@ -513,6 +548,30 @@ const addCompanionBtn = document.getElementById('addCompanion');
 // Helper: conta quantas palavras tem no nome (precisamos de 2+: nome + sobrenome)
 const getNameWordCount = (raw) =>
   (raw || '').trim().split(/\s+/).filter(Boolean).length;
+
+const normalizeNameForFeedback = (raw) =>
+  (raw || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toUpperCase();
+
+const formatNameForDisplay = (raw) =>
+  (raw || '').trim().replace(/\s+/g, ' ').toLocaleUpperCase('pt-BR');
+
+const DUPLICATE_NAME_HINT = 'Esta pessoa já possui uma confirmação.';
+const DEFAULT_NAME_HINT = 'Informe nome e sobrenome para sabermos quem é você.';
+
+const getFirstName = (raw) => (raw || '').trim().split(/\s+/).filter(Boolean)[0] || '';
+
+const updateDeclineMessage = () => {
+  if (!declineMessage) return;
+  const firstName = getFirstName(nameInput?.value);
+  declineMessage.textContent = firstName
+    ? `Que pena, ${firstName}! Vamos sentir sua falta nesse dia, mas agradecemos por nos avisar.`
+    : 'Que pena que você não poderá estar conosco. Vamos sentir sua falta, mas agradecemos por nos avisar.';
+};
 
 // Validação do nome: retorna null se válido, ou a mensagem de erro
 const validateName = () => {
@@ -524,6 +583,8 @@ const validateName = () => {
 
 // Feedback visual em tempo real: borda do campo muda conforme a pessoa digita
 nameInput?.addEventListener('input', () => {
+  clearDuplicateFeedback();
+  updateDeclineMessage();
   const count = getNameWordCount(nameInput.value);
   nameInput.classList.toggle('is-valid', count >= 2);
   nameInput.classList.toggle('is-invalid', count > 0 && count < 2);
@@ -537,6 +598,99 @@ const state = {
   attendees: 1,
   companionMode: null, // 'count' | 'names'
   companionNames: [], // array of strings
+  duplicateNames: [],
+};
+
+let toastTimer;
+
+const showToast = (message) => {
+  if (!toast) return;
+  window.clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.hidden = false;
+  toast.classList.add('is-visible');
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove('is-visible');
+    toast.hidden = true;
+  }, 5200);
+};
+
+const clearDuplicateFeedback = () => {
+  state.duplicateNames = [];
+  nameInput?.classList.remove('is-invalid');
+  nameInput?.removeAttribute('aria-invalid');
+  if (nameHint) {
+    nameHint.textContent = DEFAULT_NAME_HINT;
+    nameHint.classList.remove('field-hint-error');
+  }
+  companionList?.querySelectorAll('input.is-invalid').forEach((input) => {
+    input.classList.remove('is-invalid');
+    input.removeAttribute('aria-invalid');
+    input.parentElement?.querySelector('.field-hint-error')?.remove();
+  });
+};
+
+const setDuplicateFeedback = (duplicateNames) => {
+  state.duplicateNames = duplicateNames.map(normalizeNameForFeedback).filter(Boolean);
+  const duplicateTitular = state.duplicateNames.includes(normalizeNameForFeedback(nameInput?.value));
+
+  if (duplicateTitular) {
+    nameInput?.classList.remove('is-valid');
+    nameInput?.classList.add('is-invalid');
+    nameInput?.setAttribute('aria-invalid', 'true');
+    if (nameHint) {
+      nameHint.textContent = DUPLICATE_NAME_HINT;
+      nameHint.classList.add('field-hint-error');
+    }
+  }
+
+  renderCompanions();
+};
+
+const setDeclineMode = (isDeclining) => {
+  wizard?.classList.toggle('is-declining', isDeclining);
+  if (detailsQuestion) {
+    detailsQuestion.textContent = isDeclining ? 'Que pena que você não poderá estar conosco' : 'Conte-nos sobre você';
+  }
+  if (declineMessage) {
+    declineMessage.hidden = !isDeclining;
+    if (isDeclining) updateDeclineMessage();
+  }
+  if (companionFields) companionFields.hidden = isDeclining;
+  if (continueLabel) continueLabel.textContent = isDeclining ? 'Registrar resposta' : 'Continuar';
+  if (reviewQuestion) reviewQuestion.textContent = isDeclining ? 'Só para confirmar' : 'Confirme os dados';
+  if (submitLabel) submitLabel.textContent = isDeclining ? 'Avisar a família' : 'Enviar confirmação';
+  document.querySelectorAll('[data-decline-field]').forEach((field) => {
+    field.hidden = isDeclining;
+  });
+};
+
+const restoreRsvpPosition = (previousTop) => {
+  if (typeof previousTop !== 'number' || !window.matchMedia('(max-width: 720px)').matches) return;
+
+  const restore = () => {
+    if (!rsvpInner) return;
+    const topDelta = rsvpInner.getBoundingClientRect().top - previousTop;
+    if (Math.abs(topDelta) > 1) window.scrollBy({ top: topDelta, behavior: 'auto' });
+  };
+
+  window.requestAnimationFrame(() => {
+    restore();
+    window.requestAnimationFrame(restore);
+  });
+};
+
+const showSubmissionFailure = (message, duplicateNames = []) => {
+  const rsvpTop = rsvpInner?.getBoundingClientRect().top;
+  form.hidden = false;
+  if (successWrap) successWrap.hidden = true;
+  if (rsvpInner) rsvpInner.classList.remove('is-success');
+  if (wizardLoading) wizardLoading.hidden = true;
+  showPanel(2);
+  errorMessage.textContent = message;
+  setDuplicateFeedback(duplicateNames);
+  showToast(message);
+  restoreRsvpPosition(rsvpTop);
 };
 
 const MOMENT_LABEL = {
@@ -547,6 +701,7 @@ const MOMENT_LABEL = {
 
 const showPanel = (n) => {
   if (!wizard) return;
+  const rsvpTop = rsvpInner?.getBoundingClientRect().top;
   state.step = n;
   wizard.dataset.step = String(n);
   wizard.querySelectorAll('.wizard-panel').forEach((p) => {
@@ -563,6 +718,7 @@ const showPanel = (n) => {
     item.classList.toggle('is-active', pn <= n);
   });
   errorMessage.textContent = '';
+  restoreRsvpPosition(rsvpTop);
 };
 
 const setAttendees = (v) => {
@@ -579,8 +735,12 @@ const renderCompanions = () => {
   state.companionNames.forEach((name, idx) => {
     const row = document.createElement('div');
     row.className = 'companion-row';
+    const isDuplicate = state.duplicateNames.includes(normalizeNameForFeedback(name));
     row.innerHTML = `
-      <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" />
+      <div class="companion-input-wrap">
+        <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" class="${isDuplicate ? 'is-invalid' : ''}" ${isDuplicate ? 'aria-invalid="true"' : ''} />
+        ${isDuplicate ? `<span class="field-hint field-hint-error">${DUPLICATE_NAME_HINT}</span>` : ''}
+      </div>
       <button type="button" class="ic-remove" aria-label="Remover" data-remove-companion="${idx}">×</button>
     `;
     companionList.appendChild(row);
@@ -589,7 +749,14 @@ const renderCompanions = () => {
   companionList.querySelectorAll('input').forEach((inp) => {
     inp.addEventListener('input', (e) => {
       const i = Number(e.target.dataset.companionIdx);
+      const previousName = state.companionNames[i];
       state.companionNames[i] = e.target.value;
+      state.duplicateNames = state.duplicateNames.filter(
+        (duplicateName) => duplicateName !== normalizeNameForFeedback(previousName)
+      );
+      e.target.classList.remove('is-invalid');
+      e.target.removeAttribute('aria-invalid');
+      e.target.parentElement?.querySelector('.field-hint-error')?.remove();
     });
   });
   companionList.querySelectorAll('[data-remove-companion]').forEach((btn) => {
@@ -627,6 +794,7 @@ const setCompanionMode = (mode) => {
 
 document.querySelectorAll('[data-companion-mode]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     const mode = btn.dataset.companionMode;
     // toggle off if clicking the active one
     if (state.companionMode === mode) {
@@ -645,9 +813,11 @@ const buildAttendeesText = () => {
     return `${state.attendees} ${state.attendees === 1 ? 'pessoa' : 'pessoas'}`;
   }
   if (state.companionMode === 'names') {
-    const list = state.companionNames.map((n) => n.trim()).filter(Boolean);
-    if (!list.length) return 'Só você';
-    return ['Você', ...list].join(', ');
+    const list = state.companionNames
+      .map((n) => formatNameForDisplay(n))
+      .filter(Boolean);
+    if (!list.length) return 'SÓ VOCÊ';
+    return ['VOCÊ', ...list].join(', ');
   }
   return 'Só você';
 };
@@ -659,7 +829,7 @@ const buildCompanionsString = () => {
 
 const fillReview = () => {
   const map = {
-    name: nameInput.value.trim() || '—',
+    name: formatNameForDisplay(nameInput.value) || '—',
     attendees: buildAttendeesText(),
     moment: state.attendanceChoice === 'nao' ? '—' : (MOMENT_LABEL[state.attendanceMoment] || '—'),
   };
@@ -675,7 +845,10 @@ const resetWizard = () => {
   state.attendees = 1;
   state.companionMode = null;
   state.companionNames = [];
+  state.duplicateNames = [];
   form.reset();
+  clearDuplicateFeedback();
+  setDeclineMode(false);
   setAttendees(1);
   setCompanionMode(null);
   renderCompanions();
@@ -698,22 +871,20 @@ const resetWizard = () => {
 // choice buttons (presence)
 document.querySelectorAll('[data-choice]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     state.attendanceChoice = btn.dataset.choice;
+    setDeclineMode(state.attendanceChoice === 'nao');
     document.querySelectorAll('[data-choice]').forEach((b) =>
       b.classList.toggle('is-active', b === btn)
     );
-    if (state.attendanceChoice === 'nao') {
-      showPanel(4);
-      fillReview();
-    } else {
-      showPanel(2);
-    }
+    showPanel(2);
   });
 });
 
 // moment buttons
 document.querySelectorAll('[data-moment]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     state.attendanceMoment = btn.dataset.moment;
     document.querySelectorAll('[data-moment]').forEach((b) =>
       b.classList.toggle('is-active', b === btn)
@@ -724,12 +895,18 @@ document.querySelectorAll('[data-moment]').forEach((btn) => {
 // next / back
 document.querySelectorAll('[data-next]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     errorMessage.textContent = '';
     if (state.step === 2) {
       const nameError = validateName();
       if (nameError) {
         errorMessage.textContent = nameError;
         nameInput.focus();
+        return;
+      }
+      if (state.attendanceChoice === 'nao') {
+        fillReview();
+        showPanel(4);
         return;
       }
     } else if (state.step === 3) {
@@ -747,9 +924,10 @@ document.querySelectorAll('[data-next]').forEach((btn) => {
 
 document.querySelectorAll('[data-back]').forEach((btn) => {
   btn.addEventListener('click', () => {
+    btn.blur();
     if (state.step > 1) {
       if (state.step === 4 && state.attendanceChoice === 'nao') {
-        showPanel(1);
+        showPanel(2);
       } else {
         showPanel(state.step - 1);
       }
@@ -773,19 +951,19 @@ const submitConfirmation = async (e) => {
 
   const nameError = validateName();
   if (nameError) {
-    errorMessage.textContent = nameError;
     showPanel(2);
+    errorMessage.textContent = nameError;
     nameInput.focus();
     return;
   }
   if (!state.attendanceChoice) {
-    errorMessage.textContent = 'Escolha uma opção de presença.';
     showPanel(1);
+    errorMessage.textContent = 'Escolha uma opção de presença.';
     return;
   }
   if (state.attendanceChoice === 'sim' && !state.attendanceMoment) {
-    errorMessage.textContent = 'Selecione de quais momentos você participará.';
     showPanel(3);
+    errorMessage.textContent = 'Selecione de quais momentos você participará.';
     return;
   }
 
@@ -803,7 +981,10 @@ const submitConfirmation = async (e) => {
   const submitBtn = form.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.disabled = true;
+    submitBtn.blur();
   }
+
+  const rsvpTop = rsvpInner?.getBoundingClientRect().top;
 
   // Esconde o form e mostra o card de loading imediatamente.
   // O loading fica em loop ate a API responder, ai mostra o card final.
@@ -812,6 +993,7 @@ const submitConfirmation = async (e) => {
   if (rsvpInner) rsvpInner.classList.add('is-success');
   if (wizardLoading) wizardLoading.hidden = false;
   if (successFinal) successFinal.hidden = true;
+  restoreRsvpPosition(rsvpTop);
 
   // Cria um Promise que sinaliza quando o submit termina (sucesso ou erro).
   // O carrossel usa esse sinal, mas só para depois do primeiro ciclo completo.
@@ -840,41 +1022,32 @@ const submitConfirmation = async (e) => {
     await loadingPromise;
 
     if (!response.ok) {
-      // Mensagens de erro mais uteis dependendo do status
+      let message;
       if (response.status === 404) {
-        errorMessage.textContent =
-          'A confirmacao so funciona em producao. Teste em batizado.desenvbr.com ou rode vercel dev localmente.';
+        message =
+          'A confirmação só funciona em produção. Teste em batizado.desenvbr.com ou rode vercel dev localmente.';
       } else if (response.status === 0 || response.status >= 500) {
-        errorMessage.textContent =
-          'Nosso servidor esta demorando pra responder. Tente de novo em alguns instantes.';
+        message = 'Nosso servidor está demorando para responder. Tente de novo em alguns instantes.';
       } else {
-        errorMessage.textContent = result?.error || 'Nao foi possivel enviar a confirmacao.';
+        message = result?.error || 'Não foi possível enviar a confirmação.';
       }
-      // Volta a mostrar o form pra pessoa tentar de novo
-      form.hidden = false;
-      if (successWrap) successWrap.hidden = true;
-      if (rsvpInner) rsvpInner.classList.remove('is-success');
-      if (wizardLoading) wizardLoading.hidden = true;
+      const duplicateNames = Array.isArray(result?.duplicateNames) ? result.duplicateNames : [];
+      showSubmissionFailure(message, duplicateNames);
       return;
     }
 
     successMessage.textContent =
-      payload.willAttend === 'sim' ? buildSuccessMessage(payload) : SUCCESS_MESSAGE_NAO;
+      payload.willAttend === 'sim' ? buildSuccessMessage(payload) : buildDeclineMessage(payload);
     // Esconde o loading e mostra o card final com foto + check
     if (wizardLoading) wizardLoading.hidden = true;
     if (successFinal) successFinal.hidden = false;
+    restoreRsvpPosition(rsvpTop);
   } catch {
-    // Mesmo em erro, deixa a sequência visual terminar antes de devolver o
-    // formulário, evitando um corte brusco da animação.
     stopResolve();
     await loadingPromise;
-    errorMessage.textContent =
-      'Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.';
-    // Volta a mostrar o form
-    form.hidden = false;
-    if (successWrap) successWrap.hidden = true;
-    if (rsvpInner) rsvpInner.classList.remove('is-success');
-    if (wizardLoading) wizardLoading.hidden = true;
+    showSubmissionFailure(
+      'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.'
+    );
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;

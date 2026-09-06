@@ -1499,18 +1499,21 @@ a {
 }
 
 .companion-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  display: block;
   animation: row-in 0.35s var(--ease-out);
 }
 
 .companion-input-wrap {
   display: flex;
-  flex: 1;
   min-width: 0;
   flex-direction: column;
   gap: 6px;
+}
+
+.companion-input-control {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
 }
 
 @keyframes row-in {
@@ -1545,7 +1548,7 @@ a {
 
 .companion-row .ic-remove {
   width: 40px;
-  height: 40px;
+  height: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;

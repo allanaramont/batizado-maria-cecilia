@@ -742,10 +742,12 @@ const renderCompanions = () => {
     const isDuplicate = state.duplicateNames.includes(normalizeNameForFeedback(name));
     row.innerHTML = `
       <div class="companion-input-wrap">
-        <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" class="${isDuplicate ? 'is-invalid' : ''}" ${isDuplicate ? 'aria-invalid="true"' : ''} />
+        <div class="companion-input-control">
+          <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" class="${isDuplicate ? 'is-invalid' : ''}" ${isDuplicate ? 'aria-invalid="true"' : ''} />
+          <button type="button" class="ic-remove" aria-label="Remover" data-remove-companion="${idx}">×</button>
+        </div>
         ${isDuplicate ? `<span class="field-hint field-hint-error">${DUPLICATE_NAME_HINT}</span>` : ''}
       </div>
-      <button type="button" class="ic-remove" aria-label="Remover" data-remove-companion="${idx}">×</button>
     `;
     companionList.appendChild(row);
   });

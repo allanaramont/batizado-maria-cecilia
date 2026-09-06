@@ -1992,6 +1992,13 @@ a {
   color: var(--rose-deep);
 }
 
+.footer-legal {
+  margin: 12px 0 0;
+  color: var(--ink-mute);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
 /* ---------- 15. REVEAL ANIMATIONS ---------- */
 [data-reveal] {
   opacity: 0;

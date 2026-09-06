@@ -1422,7 +1422,7 @@ a {
 /* companion toggle (step 2) */
 .companion-toggle {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -1469,10 +1469,15 @@ a {
 }
 
 .companion-toggle .m-icon {
-  font-size: 18px;
+  width: 22px;
+  height: 22px;
   opacity: 0.85;
-  font-style: normal;
-  font-family: var(--font-accent);
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  flex: 0 0 auto;
 }
 
 .companion-toggle .btn-magnetic.is-active .m-icon {

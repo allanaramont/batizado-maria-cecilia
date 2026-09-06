@@ -1526,6 +1526,7 @@ a {
 
 .companion-row input {
   flex: 1;
+  scroll-margin-block: 24px;
   font-family: var(--font-ui);
   font-size: 15px;
   color: var(--ink);

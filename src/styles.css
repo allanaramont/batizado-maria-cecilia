@@ -1427,6 +1427,7 @@ a {
 }
 
 .companion-toggle .btn-magnetic {
+  width: 100%;
   background: transparent;
   color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--surface-line-strong);
@@ -1673,7 +1674,8 @@ a {
   border: 1px solid var(--surface-line-strong);
   border-radius: 999px;
   overflow: hidden;
-  width: fit-content;
+  width: 100%;
+  justify-content: space-between;
   padding: 4px;
   gap: 4px;
   transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);

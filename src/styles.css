@@ -1973,6 +1973,25 @@ a {
   margin: 0;
 }
 
+.footer-credit {
+  margin: 28px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--surface-line);
+  color: var(--ink-mute);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.footer-credit a {
+  color: var(--ink-soft);
+  font-weight: 600;
+  transition: color 0.25s var(--ease-out);
+}
+
+.footer-credit a:hover {
+  color: var(--rose-deep);
+}
+
 /* ---------- 15. REVEAL ANIMATIONS ---------- */
 [data-reveal] {
   opacity: 0;

@@ -601,6 +601,10 @@ const state = {
   duplicateNames: [],
 };
 
+// Referência do campo que deve receber o foco quando a lista de nomes abre.
+// O objeto mantém a referência mesmo depois que a lista é renderizada novamente.
+const companionInputRef = { current: null };
+
 let toastTimer;
 
 const showToast = (message) => {
@@ -738,13 +742,16 @@ const renderCompanions = () => {
     const isDuplicate = state.duplicateNames.includes(normalizeNameForFeedback(name));
     row.innerHTML = `
       <div class="companion-input-wrap">
-        <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" class="${isDuplicate ? 'is-invalid' : ''}" ${isDuplicate ? 'aria-invalid="true"' : ''} />
+        <div class="companion-input-control">
+          <input type="text" placeholder="Nome do acompanhante" value="${name.replace(/"/g, '&quot;')}" data-companion-idx="${idx}" class="${isDuplicate ? 'is-invalid' : ''}" ${isDuplicate ? 'aria-invalid="true"' : ''} />
+          <button type="button" class="ic-remove" aria-label="Remover" data-remove-companion="${idx}">×</button>
+        </div>
         ${isDuplicate ? `<span class="field-hint field-hint-error">${DUPLICATE_NAME_HINT}</span>` : ''}
       </div>
-      <button type="button" class="ic-remove" aria-label="Remover" data-remove-companion="${idx}">×</button>
     `;
     companionList.appendChild(row);
   });
+  companionInputRef.current = companionList.querySelector('input');
   // bind events
   companionList.querySelectorAll('input').forEach((inp) => {
     inp.addEventListener('input', (e) => {
@@ -768,13 +775,31 @@ const renderCompanions = () => {
   });
 };
 
+const focusCompanionInput = (input = companionInputRef.current) => {
+  if (!input) return;
+  companionInputRef.current = input;
+
+  window.requestAnimationFrame(() => {
+    if (companionInputRef.current !== input || !document.body.contains(input)) return;
+
+    input.focus({ preventScroll: true });
+    const viewportPadding = 24;
+    const { top, bottom } = input.getBoundingClientRect();
+    const isOutsideViewport = top < viewportPadding || bottom > window.innerHeight - viewportPadding;
+
+    if (isOutsideViewport) {
+      input.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    }
+  });
+};
+
 const addCompanionRow = () => {
   state.companionNames.push('');
   renderCompanions();
-  // focus the new input
   const inputs = companionList?.querySelectorAll('input');
-  if (inputs && inputs.length) {
-    inputs[inputs.length - 1].focus();
+  const newInput = inputs?.[inputs.length - 1];
+  if (newInput) {
+    focusCompanionInput(newInput);
   }
 };
 
@@ -789,6 +814,8 @@ const setCompanionMode = (mode) => {
   });
   if (mode === 'names' && state.companionNames.length === 0) {
     addCompanionRow();
+  } else if (mode === 'names') {
+    focusCompanionInput(companionList?.querySelector('input'));
   }
 };
 

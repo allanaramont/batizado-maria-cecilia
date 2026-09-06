@@ -1067,10 +1067,19 @@ showPanel(1);
    ============================================================= */
 const trackVisit = () => {
   if (!VISIT_API_ENDPOINT) return;
-  // payload minimo: só o path. Localizacao vem dos headers
-  // x-vercel-ip-* do proprio Vercel — não precisa de geolocation API
-  // nem de userAgent/tela/etc, é mais leve e mais respeitoso com privacidade
-  const payload = { path: window.location.pathname };
+  const payload = {
+    page: window.location.href,
+    path: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    referrer: document.referrer || 'Acesso direto',
+    userAgent: window.navigator.userAgent,
+    language: window.navigator.language,
+    platform: window.navigator.platform,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    screen: {
+      width: window.screen.width,
+      height: window.screen.height,
+    },
+  };
   const body = JSON.stringify(payload);
   try {
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {

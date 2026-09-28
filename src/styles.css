@@ -1,5 +1,5 @@
 /* =============================================================
-   BATIZADO DA MARIA CECÍLIA
+   BATIZADO DA MARIA CECILIA
    Design system — editorial, moderno, caloroso
    ============================================================= */
 
@@ -643,7 +643,7 @@ a {
     "swsh" 0;
 }
 
-/* garante que o span interno do "Cecília" já carrega a fonte italic
+/* garante que o span interno do "Cecilia" já carrega a fonte italic
    desde o início, evitando qualquer flash de fonte diferente quando
    o typewriter começa a preencher */
 .display .italic > span {

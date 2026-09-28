@@ -249,6 +249,7 @@ const galleryItems = Array.from(
 );
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
+const lightboxVideo = document.getElementById("lightboxVideo");
 const lightboxClose = document.querySelector(".lightbox-close");
 const lightboxPrev = document.querySelector(".lightbox-prev");
 const lightboxNext = document.querySelector(".lightbox-next");
@@ -257,19 +258,41 @@ const lightboxCounter = document.getElementById("lightboxCounter");
 let lastFocused = null;
 let currentIndex = -1;
 
-const showPhoto = (index) => {
+const stopVideo = () => {
+  if (!lightboxVideo) return;
+  lightboxVideo.pause();
+  lightboxVideo.removeAttribute("src");
+  lightboxVideo.load();
+};
+
+const showItem = (index) => {
   if (!lightbox || !lightboxImg || galleryItems.length === 0) return;
   currentIndex = (index + galleryItems.length) % galleryItems.length;
   const item = galleryItems[currentIndex];
   const alt = item.querySelector("img")?.alt || "";
-  lightboxImg.src = item.dataset.full;
-  lightboxImg.alt = alt;
+  const isVideo = item.dataset.type === "video";
+
+  stopVideo();
+
+  if (isVideo && lightboxVideo) {
+    lightboxImg.hidden = true;
+    lightboxImg.removeAttribute("src");
+    lightboxVideo.hidden = false;
+    lightboxVideo.src = item.dataset.full;
+    lightboxVideo.setAttribute("aria-label", alt);
+  } else {
+    lightboxVideo && (lightboxVideo.hidden = true);
+    lightboxImg.hidden = false;
+    lightboxImg.src = item.dataset.full;
+    lightboxImg.alt = alt;
+  }
+
   if (lightboxCounter) {
     lightboxCounter.textContent = `${currentIndex + 1} / ${galleryItems.length}`;
   }
-  const singlePhoto = galleryItems.length <= 1;
-  if (lightboxPrev) lightboxPrev.disabled = singlePhoto;
-  if (lightboxNext) lightboxNext.disabled = singlePhoto;
+  const singleItem = galleryItems.length <= 1;
+  if (lightboxPrev) lightboxPrev.disabled = singleItem;
+  if (lightboxNext) lightboxNext.disabled = singleItem;
 };
 
 const openLightbox = (index) => {
@@ -277,7 +300,7 @@ const openLightbox = (index) => {
   lastFocused = document.activeElement;
   lightbox.hidden = false;
   document.body.style.overflow = "hidden";
-  showPhoto(index);
+  showItem(index);
   lightboxClose?.focus();
 };
 
@@ -285,6 +308,7 @@ const closeLightbox = () => {
   if (!lightbox) return;
   lightbox.hidden = true;
   lightboxImg.removeAttribute("src");
+  stopVideo();
   document.body.style.overflow = "";
   if (lastFocused instanceof HTMLElement) lastFocused.focus();
 };
@@ -294,8 +318,8 @@ galleryItems.forEach((item, index) => {
 });
 
 lightboxClose?.addEventListener("click", closeLightbox);
-lightboxPrev?.addEventListener("click", () => showPhoto(currentIndex - 1));
-lightboxNext?.addEventListener("click", () => showPhoto(currentIndex + 1));
+lightboxPrev?.addEventListener("click", () => showItem(currentIndex - 1));
+lightboxNext?.addEventListener("click", () => showItem(currentIndex + 1));
 
 lightbox?.addEventListener("click", (e) => {
   if (e.target === lightbox) closeLightbox();
@@ -304,8 +328,8 @@ lightbox?.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (!lightbox || lightbox.hidden) return;
   if (e.key === "Escape") closeLightbox();
-  if (e.key === "ArrowLeft") showPhoto(currentIndex - 1);
-  if (e.key === "ArrowRight") showPhoto(currentIndex + 1);
+  if (e.key === "ArrowLeft") showItem(currentIndex - 1);
+  if (e.key === "ArrowRight") showItem(currentIndex + 1);
 });
 
 /* =============================================================

@@ -2371,6 +2371,38 @@ a {
   object-fit: contain;
 }
 
+.lightbox-video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-strong);
+}
+
+.lightbox-video[hidden] {
+  display: none;
+}
+
+.g-item-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: rgba(38, 20, 26, 0.28);
+  pointer-events: none;
+}
+
+.g-item-play svg {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+.g-item--video img {
+  transition:
+    transform 0.6s var(--ease-out),
+    opacity 0.3s var(--ease-out);
+}
+
 .lightbox-close {
   position: absolute;
   top: clamp(14px, 3vw, 28px);

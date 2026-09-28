@@ -1,7 +1,7 @@
 import './styles.css';
 
 /* =============================================================
-   BATIZADO DA MARIA CECÍLIA
+   BATIZADO DA MARIA CECILIA
    Frontend interactions
    ============================================================= */
 
@@ -205,7 +205,7 @@ async function runTypewriter() {
 
   // 4) Lead digita em ritmo de leitura humana, com micro-pausas em
   //    "carinho" e "momento" para soar como alguém falando e dar
-  //    peso emocional às palavras-chave. O nome "Maria Cecília" já
+  //    peso emocional às palavras-chave. O nome "Maria Cecilia" já
   //    aparece no título logo acima, então não precisa repetir aqui.
   await typeIntoRhythmic(typeLead, [
     { text: 'Convidamos você com muito ', speed: 28 },

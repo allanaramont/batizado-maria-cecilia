@@ -244,45 +244,68 @@ setInterval(updateElapsed, 1000);
 /* =============================================================
    7. GALERIA — LIGHTBOX
    ============================================================= */
-const galleryItems = document.querySelectorAll(".g-item");
+const galleryItems = Array.from(
+  document.querySelectorAll(".g-item[data-full]"),
+);
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
 const lightboxClose = document.querySelector(".lightbox-close");
+const lightboxPrev = document.querySelector(".lightbox-prev");
+const lightboxNext = document.querySelector(".lightbox-next");
+const lightboxCounter = document.getElementById("lightboxCounter");
 
 let lastFocused = null;
+let currentIndex = -1;
 
-const openLightbox = (item) => {
-  if (!lightbox || !lightboxImg) return;
-  const full = item.dataset.full;
+const showPhoto = (index) => {
+  if (!lightbox || !lightboxImg || galleryItems.length === 0) return;
+  currentIndex = (index + galleryItems.length) % galleryItems.length;
+  const item = galleryItems[currentIndex];
   const alt = item.querySelector("img")?.alt || "";
-  lightboxImg.src = full;
+  lightboxImg.src = item.dataset.full;
   lightboxImg.alt = alt;
+  if (lightboxCounter) {
+    lightboxCounter.textContent = `${currentIndex + 1} / ${galleryItems.length}`;
+  }
+  const singlePhoto = galleryItems.length <= 1;
+  if (lightboxPrev) lightboxPrev.disabled = singlePhoto;
+  if (lightboxNext) lightboxNext.disabled = singlePhoto;
+};
+
+const openLightbox = (index) => {
+  if (!lightbox || !lightboxImg) return;
   lastFocused = document.activeElement;
   lightbox.hidden = false;
   document.body.style.overflow = "hidden";
+  showPhoto(index);
   lightboxClose?.focus();
 };
 
 const closeLightbox = () => {
   if (!lightbox) return;
   lightbox.hidden = true;
-  lightboxImg.src = "";
+  lightboxImg.removeAttribute("src");
   document.body.style.overflow = "";
   if (lastFocused instanceof HTMLElement) lastFocused.focus();
 };
 
-galleryItems.forEach((item) => {
-  item.addEventListener("click", () => openLightbox(item));
+galleryItems.forEach((item, index) => {
+  item.addEventListener("click", () => openLightbox(index));
 });
 
 lightboxClose?.addEventListener("click", closeLightbox);
+lightboxPrev?.addEventListener("click", () => showPhoto(currentIndex - 1));
+lightboxNext?.addEventListener("click", () => showPhoto(currentIndex + 1));
 
 lightbox?.addEventListener("click", (e) => {
   if (e.target === lightbox) closeLightbox();
 });
 
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && lightbox && !lightbox.hidden) closeLightbox();
+  if (!lightbox || lightbox.hidden) return;
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowLeft") showPhoto(currentIndex - 1);
+  if (e.key === "ArrowRight") showPhoto(currentIndex + 1);
 });
 
 /* =============================================================

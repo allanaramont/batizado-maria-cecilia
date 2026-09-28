@@ -2392,6 +2392,63 @@ a {
   background: rgba(255, 255, 255, 0.18);
 }
 
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+
+.lightbox-nav:hover,
+.lightbox-nav:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.lightbox-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+.lightbox-prev {
+  left: clamp(8px, 3vw, 24px);
+}
+
+.lightbox-next {
+  right: clamp(8px, 3vw, 24px);
+}
+
+.lightbox-counter {
+  position: absolute;
+  bottom: clamp(14px, 3vw, 28px);
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 560px) {
+  .lightbox-nav {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,

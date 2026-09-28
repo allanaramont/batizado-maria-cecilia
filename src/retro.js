@@ -1,7 +1,7 @@
 import "./styles.css";
 
 /* =============================================================
-   BATIZADO DA MARIA CECÍLIA — RETROSPECTIVA
+   BATIZADO DA MARIA CECILIA — RETROSPECTIVA
    Tela pós-evento: fotos do dia + "tempo desde" + agradecimento.
    Reaproveita o design system de styles.css e a mesma linguagem de
    interação do convite (cursor, reveal, scroll), sem o wizard de RSVP.
